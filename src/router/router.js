@@ -1,0 +1,136 @@
+import { createRouter, createWebHistory } from 'vue-router';
+
+const routes = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login.vue')
+  },
+  // 老师端
+  {
+    path: '/teacher',
+    name: 'TeacherDashboard',
+    component: () => import('@/views/Dashboard.vue'),
+    children: [
+      {
+        path: '',
+        name: 'TeacherHome',
+        component: () => import('@/views/TeacherHome.vue')
+      },
+      {
+        path: 'courseManagement',
+        name: 'CourseManagement',
+        component: () => import('@/views/courseManagement.vue')
+      },
+      {
+        path: 'studentManagement',
+        name: 'StudentManagement',
+        component: () => import('@/views/studentManagement.vue')
+      },
+      {
+        path: 'homeworkManagement',
+        name: 'HomeworkManagement',
+        component: () => import('@/views/homeworkManagement.vue')
+      },
+      {
+        path: 'resourceCenter',
+        name: 'ResourceCenter',
+        component: () => import('@/views/resourceCenter.vue')
+      },
+      {
+        path: 'learningAnalysis',
+        name: 'LearningAnalysis',
+        component: () => import('@/views/learningAnalysis.vue')
+      },
+      {
+        path: 'profile',
+        name: 'TeacherProfile',
+        component: () => import('@/views/TeacherProfile.vue')
+      }
+    ]
+  },
+  // 学生端
+  {
+    path: '/student',
+    name: 'StudentDashboard',
+    component: () => import('@/views/StudentDashboard.vue'),
+    children: [
+      {
+        path: '',
+        name: 'StudentHome',
+        component: () => import('@/views/StudentHome.vue')
+      },
+      {
+        path: 'myCourse',
+        name: 'MyCourse',
+        component: () => import('@/views/MyCourse.vue')
+      },
+      {
+        path: 'assignment',
+        name: 'Assignment',
+        component: () => import('@/views/Assignment.vue')
+      },
+      {
+        path: 'progress',
+        name: 'Progress',
+        component: () => import('@/views/Progress.vue')
+      },
+      {
+        path: 'knowledgeMap',
+        name: 'KnowledgeMap',
+        component: () => import('@/views/KnowledgeMap.vue')
+      },
+      {
+        path: 'learningAnalysis',
+        name: 'StudentLearningAnalysis',
+        component: () => import('@/views/learningAnalysis.vue')
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('@/views/Profile.vue')
+      },
+      {
+        path: 'course/:id',
+        name: 'CourseDetail',
+        component: () => import('@/views/CourseDetail.vue')
+      }
+    ]
+  },
+  // 默认首页
+  {
+    path: '/',
+    name: 'HomePage',
+    component: () => import('@/views/HomePage.vue')
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+});
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+  // 公开页面
+  const publicPages = ['/', '/login'];
+  if (publicPages.includes(to.path)) {
+    return next();
+  }
+  // 未登录
+  if (!user) {
+    return next('/login');
+  }
+  // 老师端页面，学生访问时跳转学生首页
+  if (to.path.startsWith('/teacher') && user.role !== 'teacher') {
+    return next('/student');
+  }
+  // 学生端页面，老师访问时跳转老师首页
+  if (to.path.startsWith('/student') && user.role !== 'student') {
+    return next('/teacher');
+  }
+  next();
+});
+
+export default router;

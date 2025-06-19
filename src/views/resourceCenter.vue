@@ -1,0 +1,264 @@
+<template>
+  <div class="resource-center-container">
+    <div class="header-area">
+      <div class="header-title">
+        <div class="logo"><i class="el-icon-folder-opened"></i></div>
+        <div>
+          <h1>资源中心</h1>
+          <p class="subtitle">集中管理课程相关的所有教学资源，支持上传、下载、删除</p>
+        </div>
+      </div>
+      <el-button type="primary" @click="showUpload = true">上传资源</el-button>
+    </div>
+    <el-card class="table-card">
+      <el-table
+        :data="resourceList"
+        style="width: 100%; margin-top: 10px; border-radius: 10px;"
+        :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}"
+      >
+        <el-table-column prop="name" label="资源名称" />
+        <el-table-column prop="type" label="类型" />
+        <el-table-column prop="size" label="大小" />
+        <el-table-column prop="uploadTime" label="上传时间" />
+        <el-table-column label="操作">
+          <template #default="scope">
+            <el-button size="small" @click="downloadResource(scope.row)">下载</el-button>
+            <el-button size="small" type="danger" @click="deleteResource(scope.row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div v-if="!resourceList.length" class="empty-state">
+        <div class="empty-icon">📁</div>
+        <h3>暂无资源</h3>
+        <p>点击右上角"上传资源"按钮添加教学资料</p>
+      </div>
+    </el-card>
+    <!-- 简单风格的上传弹窗 -->
+    <el-dialog v-model="showUpload" title="上传资源" width="400px">
+      <el-form :model="uploadForm" label-width="80px">
+        <el-form-item label="资源名称">
+          <el-input v-model="uploadForm.name" placeholder="请输入资源名称" />
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select v-model="uploadForm.type" placeholder="请选择类型">
+            <el-option label="文档" value="文档" />
+            <el-option label="图片" value="图片" />
+            <el-option label="视频" value="视频" />
+            <el-option label="其他" value="其他" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="文件">
+          <el-upload
+            :auto-upload="false"
+            :show-file-list="true"
+            :on-change="handleFileChange"
+            :limit="1"
+            ref="uploadRef"
+          >
+            <el-button type="primary">选择文件</el-button>
+            <template #tip>
+              <div class="el-upload__tip">只能上传一个文件</div>
+            </template>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="closeUploadDialog">取消</el-button>
+        <el-button type="primary" @click="submitUpload">上传</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+
+const resourceList = ref([
+  { id: 1, name: 'Vue 3 入门指南.pdf', type: '文档', size: '2.5 MB', uploadTime: '2023-04-10 10:30', fileUrl: 'https://example.com/vue3-guide.pdf' },
+  { id: 2, name: 'Element Plus 教程.mp4', type: '视频', size: '50.1 MB', uploadTime: '2023-04-12 14:00', fileUrl: 'https://example.com/element-plus-tutorial.mp4' },
+  { id: 3, name: '项目设计图.png', type: '图片', size: '1.2 MB', uploadTime: '2023-04-15 09:15', fileUrl: 'https://example.com/design-mockup.png' },
+]);
+
+const showUpload = ref(false);
+const uploadForm = ref({ name: '', type: '', file: null });
+const uploadRef = ref(null);
+
+function handleFileChange(file) {
+  uploadForm.value.file = file.raw;
+}
+
+function closeUploadDialog() {
+  showUpload.value = false;
+  uploadForm.value = { name: '', type: '', file: null };
+  if (uploadRef.value && uploadRef.value.clearFiles) {
+    uploadRef.value.clearFiles();
+  }
+}
+
+async function submitUpload() {
+  if (!uploadForm.value.name.trim()) {
+    ElMessage.error('请输入资源名称');
+    return;
+  }
+  if (!uploadForm.value.type) {
+    ElMessage.error('请选择资源类型');
+    return;
+  }
+  if (!uploadForm.value.file) {
+    ElMessage.error('请选择要上传的文件');
+    return;
+  }
+
+  const newResource = {
+    id: resourceList.value.length ? Math.max(...resourceList.value.map(r => r.id)) + 1 : 1,
+    name: uploadForm.value.name,
+    type: uploadForm.value.type,
+    size: uploadForm.value.file ? (uploadForm.value.file.size / (1024 * 1024)).toFixed(2) + ' MB' : '0 MB',
+    uploadTime: new Date().toLocaleString('zh-CN', { hour12: false }),
+    fileUrl: uploadForm.value.file ? URL.createObjectURL(uploadForm.value.file) : null
+  };
+
+  resourceList.value.push(newResource);
+  ElMessage.success('资源上传成功！');
+  closeUploadDialog();
+}
+
+function downloadResource(row) {
+  if (row.fileUrl) {
+    const a = document.createElement('a');
+    a.href = row.fileUrl;
+    a.download = row.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    ElMessage.success(`开始下载: ${row.name}`);
+  } else {
+    ElMessage.info('该资源没有有效的下载链接。');
+    console.warn('资源没有下载URL:', row);
+  }
+}
+
+function deleteResource(id) {
+  ElMessageBox.confirm('确定要删除此资源吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    const initialLength = resourceList.value.length;
+    resourceList.value = resourceList.value.filter(resource => resource.id !== id);
+    if (resourceList.value.length < initialLength) {
+      ElMessage.success('资源删除成功！');
+    } else {
+      ElMessage.error('删除失败，未找到该资源。');
+    }
+  }).catch(() => {
+    ElMessage.info('已取消删除操作');
+  });
+}
+</script>
+
+<style scoped>
+.resource-center-container {
+  max-width: 900px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 32px 24px 24px 24px;
+}
+.header-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo {
+  font-size: 1.6rem;
+  color: #409EFF;
+}
+.subtitle {
+  color: #888;
+  font-size: 15px;
+  margin-top: 2px;
+}
+.table-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+}
+.empty-state {
+  color: #bbb;
+  text-align: center;
+  padding: 32px 0 16px 0;
+}
+.empty-icon {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+/* 弹窗主体样式，通常不需要改动 */
+.el-dialog__body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 16px 20px;
+  box-sizing: border-box;
+}
+
+/* 修复下拉图标过大问题：直接针对 el-icon 组件调整 */
+/* 使用 :deep() 穿透 scoped 样式 */
+:deep(.el-upload-dragger .el-icon) {
+  font-size: 32px !important; /* 强制图标大小 */
+  color: #409EFF; /* 可以自定义图标颜色 */
+}
+
+/* 调整上传拖拽区域样式，确保图标和文字垂直排列 */
+.upload-demo .el-upload-dragger {
+  max-width: 320px;
+  max-height: 120px;
+  min-height: 80px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column; /* 让图标和文字垂直排列 */
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+/* 确保上传文本的样式正常 */
+.el-upload__text {
+  margin-top: 8px; /* 给图标和文字之间留一些间距 */
+}
+
+.dialog-form {
+  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 4px 4px 4px;
+}
+@media (max-width: 600px) {
+  .resource-center-container {
+    max-width: 100vw;
+    margin: 10px 0;
+    padding: 10px 2vw;
+  }
+  .header-title h1 {
+    font-size: 1.1rem;
+  }
+  .table-card {
+    padding: 0 2px 8px 2px;
+  }
+}
+</style>

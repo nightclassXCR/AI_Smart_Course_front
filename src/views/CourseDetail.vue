@@ -1,0 +1,289 @@
+<template>
+  <div class="course-detail-container">
+    <!-- 顶部信息区 -->
+    <div class="header-area">
+      <el-button type="text" icon="el-icon-arrow-left" @click="$router.back()">返回</el-button>
+      <div class="header-title">
+        <div class="logo">📖</div>
+        <div>
+          <h1>{{ course.name }}</h1>
+          <p class="subtitle">授课教师：{{ course.teacher }} | 进度：{{ course.progress }}%</p>
+        </div>
+      </div>
+    </div>
+    <!-- 课程信息卡片 -->
+    <div class="info-card">
+      <div class="info-row"><span>课程简介：</span>{{ course.desc }}</div>
+      <div class="info-row"><span>当前章节：</span>{{ course.chapter }}</div>
+      <div class="info-row"><span>总课时：</span>{{ course.totalChapters }}</div>
+      <div class="info-row"><span>上次学习：</span>{{ course.lastUpdate }}</div>
+      <div class="info-row">
+        <span>学习进度：</span>
+        <el-progress :percentage="course.progress" :stroke-width="16" style="width: 200px; display: inline-block;" />
+      </div>
+    </div>
+    <!-- 章节与概念区 -->
+    <div class="chapter-section">
+      <div class="chapter-title">课程章节与知识点</div>
+      <div v-for="chapter in chapters" :key="chapter.id" class="chapter-card">
+        <div class="chapter-header">
+          <span class="chapter-name">{{ chapter.name }}</span>
+          <span class="chapter-progress">进度：{{ chapter.progress }}%</span>
+        </div>
+        <div class="concept-list">
+          <div v-for="concept in chapter.concepts" :key="concept" class="concept-item">
+            <i class="el-icon-collection"></i> {{ concept }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 智能问答区 -->
+    <div class="qa-card">
+      <div class="qa-header">
+        <span class="qa-title">智能问答</span>
+        <span class="qa-desc">有疑问？试试向AI提问吧！</span>
+      </div>
+      <div class="qa-list">
+        <div v-for="(item, idx) in qaList" :key="idx" class="qa-item" :class="item.role">
+          <div class="qa-bubble">
+            <span v-if="item.role==='user'">🙋‍♂️</span>
+            <span v-else>🤖</span>
+            <span class="qa-text">{{ item.text }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="qa-input-row">
+        <input v-model="question" @keyup.enter="askAI" placeholder="请输入你的问题..." />
+        <el-button type="primary" @click="askAI">提问</el-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+const route = useRoute();
+// 模拟课程数据
+const course = ref({
+  name: '高中数学 - 函数与导数',
+  teacher: '王老师',
+  progress: 80,
+  desc: '本课程涵盖函数与导数的基础知识、典型题型与解题技巧，帮助你夯实数学基础。',
+  chapter: '第5章 导数应用',
+  totalChapters: 12,
+  lastUpdate: '2024-03-20 20:15'
+});
+// 模拟章节与概念
+const chapters = ref([
+  {
+    id: 1,
+    name: '第1章 函数的基本概念',
+    progress: 100,
+    concepts: ['函数的定义', '函数的表示方法', '函数的性质']
+  },
+  {
+    id: 2,
+    name: '第2章 函数的图像与性质',
+    progress: 100,
+    concepts: ['奇偶性', '单调性', '周期性', '最值']
+  },
+  {
+    id: 3,
+    name: '第3章 导数的概念',
+    progress: 80,
+    concepts: ['导数的定义', '导数的几何意义', '可导与连续']
+  },
+  {
+    id: 4,
+    name: '第4章 导数的运算',
+    progress: 60,
+    concepts: ['基本求导法则', '复合函数求导', '隐函数求导']
+  },
+  {
+    id: 5,
+    name: '第5章 导数应用',
+    progress: 30,
+    concepts: ['单调性与导数', '极值与最值', '函数图像的凹凸性']
+  }
+]);
+// 智能问答
+const qaList = ref([
+  { role: 'ai', text: '欢迎提问，我会尽力为你解答课程相关问题！' }
+]);
+const question = ref('');
+function askAI() {
+  if (!question.value.trim()) return;
+  qaList.value.push({ role: 'user', text: question.value });
+  const userQ = question.value;
+  question.value = '';
+  setTimeout(() => {
+    // 模拟AI回复
+    qaList.value.push({ role: 'ai', text: `AI正在思考："${userQ}"...（此处可对接真实AI接口）` });
+  }, 800);
+}
+</script>
+
+<style scoped>
+.course-detail-container {
+  max-width: 800px;
+  margin: 36px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 32px 28px 24px 28px;
+}
+.header-area {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo {
+  font-size: 2rem;
+}
+.subtitle {
+  color: #888;
+  font-size: 15px;
+  margin-top: 2px;
+}
+.info-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 18px 20px 14px 20px;
+  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.info-row {
+  font-size: 15px;
+  color: #333;
+}
+.info-row span {
+  color: #888;
+  margin-right: 8px;
+}
+.chapter-section {
+  margin-bottom: 22px;
+}
+.chapter-title {
+  font-weight: bold;
+  font-size: 17px;
+  margin-bottom: 10px;
+  color: #409EFF;
+}
+.chapter-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 14px 18px 10px 18px;
+  margin-bottom: 12px;
+}
+.chapter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.chapter-name {
+  font-weight: 500;
+  font-size: 15px;
+}
+.chapter-progress {
+  color: #67c23a;
+  font-size: 13px;
+}
+.concept-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 2px;
+}
+.concept-item {
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #222;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.qa-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 18px 20px 14px 20px;
+  margin-top: 18px;
+}
+.qa-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.qa-title {
+  font-weight: bold;
+  font-size: 16px;
+}
+.qa-desc {
+  color: #888;
+  font-size: 13px;
+}
+.qa-list {
+  min-height: 60px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.qa-item.user .qa-bubble {
+  background: #eaf6ff;
+  color: #222;
+  align-self: flex-end;
+}
+.qa-item.ai .qa-bubble {
+  background: #fff;
+  color: #222;
+  align-self: flex-start;
+}
+.qa-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 16px;
+  padding: 8px 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  font-size: 15px;
+  max-width: 90%;
+}
+.qa-input-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.qa-input-row input {
+  flex: 1;
+  border: 1px solid #e4e7ed;
+  border-radius: 16px;
+  padding: 8px 14px;
+  font-size: 15px;
+  outline: none;
+}
+@media (max-width: 600px) {
+  .course-detail-container {
+    max-width: 100vw;
+    padding: 10px 2vw;
+  }
+}
+</style> 
