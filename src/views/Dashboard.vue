@@ -206,4 +206,40 @@ export default {
     padding: 10px;
   }
 }
+.home-container,
+.mycourse-container,
+.login-container,
+.profile-container,
+.resource-center-container,
+.course-mgmt-container,
+.student-mgmt-container,
+.progress-container {
+  width: 100vw;
+  max-width: 1400px;
+  margin: 32px auto;
+}
+.all-courses-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.all-courses-card {
+  width: 100%;
+  max-width: 1000px;
+  min-width: 320px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+.overview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+.overview-item {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 300px;
+}
 </style>
