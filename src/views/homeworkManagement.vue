@@ -18,7 +18,7 @@
         <el-table-column label="操作">
           <template #default="scope">
             <el-button size="small" @click="editHomework(scope.row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="deleteHomework(scope.row.id)">删除</el-button>
+            <el-button size="small" type="danger" @click="deleteHomeworkHandler(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -29,7 +29,7 @@
       </div>
     </el-card>
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="showAdd" :title="editId ? '编辑作业' : '新增作业'" width="400px">
+    <el-dialog v-model="showAdd" :title="editId ? '编辑作业' : '新增作业'" width="500px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="作业标题">
           <el-input v-model="form.title" />
@@ -41,42 +41,100 @@
           <el-input v-model="form.deadline" />
         </el-form-item>
       </el-form>
+      <div style="margin: 10px 0;">
+        <el-button type="primary" @click="showQuestionDialog = true">选择题目</el-button>
+      </div>
+      <div v-if="form.questions && form.questions.length">
+        <div style="font-weight:bold;margin-bottom:4px;">已选题目：</div>
+        <el-table :data="form.questions" size="small" style="width:100%;">
+          <el-table-column prop="content" label="题目内容" />
+          <el-table-column label="正确答案">
+            <template #default="scope">
+              <span>{{ scope.row.options[scope.row.answer] }}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
       <template #footer>
         <el-button @click="showAdd = false">取消</el-button>
         <el-button type="primary" @click="saveHomework">保存</el-button>
       </template>
     </el-dialog>
+    <!-- 题库选择弹窗 -->
+    <el-dialog v-model="showQuestionDialog" title="选择题目" width="600px" :visible="false" />
+    <!-- 题库选择弹窗已废弃，改为跳转新页面 -->
+    <router-view v-if="showQuestionDialog" @question-selected="onQuestionSelected" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-// 假设有对应API
+import { getHomeworkList, createHomework, updateHomework, deleteHomework } from '@/api/homework';
+import { ElMessage } from 'element-plus';
 const homeworkList = ref([]);
 const showAdd = ref(false);
-const form = ref({ title: '', course: '', deadline: '' });
+const form = ref({ title: '', course: '', deadline: '', questions: [] });
 const editId = ref(null);
+const showQuestionDialog = ref(false);
+const loading = ref(false);
 
 const fetchHomework = async () => {
-  // homeworkList.value = await getHomeworkList();
+  loading.value = true;
+  try {
+    const res = await getHomeworkList();
+    homeworkList.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('获取作业列表失败');
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(fetchHomework);
 
 function editHomework(row) {
   form.value = { ...row };
+  if (!form.value.questions) form.value.questions = [];
   editId.value = row.id;
   showAdd.value = true;
 }
 
-function saveHomework() {
-  // 保存逻辑
-  showAdd.value = false;
-  editId.value = null;
+async function saveHomework() {
+  loading.value = true;
+  try {
+    if (editId.value) {
+      await updateHomework({ id: editId.value, ...form.value });
+      ElMessage.success('作业更新成功');
+    } else {
+      await createHomework(form.value);
+      ElMessage.success('作业创建成功');
+    }
+    showAdd.value = false;
+    editId.value = null;
+    fetchHomework();
+  } catch (e) {
+    ElMessage.error(editId.value ? '作业更新失败' : '作业创建失败');
+  } finally {
+    loading.value = false;
+  }
 }
 
-function deleteHomework(id) {
-  // 删除逻辑
+async function deleteHomeworkHandler(id) {
+  loading.value = true;
+  try {
+    await deleteHomework(id);
+    ElMessage.success('作业删除成功');
+    fetchHomework();
+  } catch (e) {
+    ElMessage.error('作业删除失败');
+  } finally {
+    loading.value = false;
+  }
+}
+
+function onQuestionSelected(selectedQuestions) {
+  form.value.questions = selectedQuestions;
+  showQuestionDialog.value = false;
 }
 </script>
 

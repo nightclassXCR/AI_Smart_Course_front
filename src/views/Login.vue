@@ -35,7 +35,7 @@
               <input type="checkbox" v-model="loginForm.remember">
               <span>记住我</span>
             </label>
-            <a href="#" class="forgot-password">忘记密码？</a>
+            <a href="#" class="forgot-password" @click.prevent="goToForgotPassword">忘记密码？</a>
           </div>
           
           <button type="submit" class="login-btn" :disabled="loading">
@@ -192,6 +192,9 @@
         // 游客身份预览
         localStorage.setItem('user', JSON.stringify({ role, guest: true }))
         this.$router.push(`/${role}`)
+      },
+      goToForgotPassword() {
+        this.$router.push('/forgot-password')
       }
     }
   }

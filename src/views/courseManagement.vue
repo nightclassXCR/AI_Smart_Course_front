@@ -19,6 +19,7 @@
           <template #default="scope">
             <el-button size="small" @click="editCourse(scope.row)">编辑</el-button>
             <el-button size="small" type="danger" @click="deleteCourse(scope.row.id)">删除</el-button>
+            <el-button size="small" type="primary" @click="viewDetail(scope.row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -53,15 +54,28 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getCourseList, addCourse, updateCourse, deleteCourse as delCourse } from '@/api/course';
+import { useRouter } from 'vue-router';
+import { getCourseList, createCourse, updateCourse, deleteCourse as delCourse } from '@/api/course';
+import { ElMessage } from 'element-plus';
+
+const router = useRouter();
 
 const courseList = ref([]);
 const showAdd = ref(false);
 const form = ref({ name: '', teacher: '', description: '' });
 const editId = ref(null);
+const loading = ref(false);
 
 const fetchCourses = async () => {
-  courseList.value = await getCourseList();
+  loading.value = true;
+  try {
+    const res = await getCourseList();
+    courseList.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('获取课程列表失败');
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(fetchCourses);
@@ -72,23 +86,41 @@ function editCourse(row) {
   showAdd.value = true;
 }
 
-function saveCourse() {
-  if (editId.value) {
-    updateCourse(editId.value, form.value).then(() => {
-      fetchCourses();
-      showAdd.value = false;
-      editId.value = null;
-    });
-  } else {
-    addCourse(form.value).then(() => {
-      fetchCourses();
-      showAdd.value = false;
-    });
+async function saveCourse() {
+  loading.value = true;
+  try {
+    if (editId.value) {
+      await updateCourse({ id: editId.value, ...form.value });
+      ElMessage.success('课程更新成功');
+    } else {
+      await createCourse(form.value);
+      ElMessage.success('课程创建成功');
+    }
+    showAdd.value = false;
+    editId.value = null;
+    fetchCourses();
+  } catch (e) {
+    ElMessage.error(editId.value ? '课程更新失败' : '课程创建失败');
+  } finally {
+    loading.value = false;
   }
 }
 
-function deleteCourse(id) {
-  delCourse(id).then(fetchCourses);
+async function deleteCourse(id) {
+  loading.value = true;
+  try {
+    await delCourse(id);
+    ElMessage.success('课程删除成功');
+    fetchCourses();
+  } catch (e) {
+    ElMessage.error('课程删除失败');
+  } finally {
+    loading.value = false;
+  }
+}
+
+function viewDetail(row) {
+  router.push(`/teacher/courseDetail/${row.id}`);
 }
 </script>
 

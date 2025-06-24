@@ -61,52 +61,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { getCourseDetail } from '@/api/course';
+import { ElMessage } from 'element-plus';
+
 const route = useRoute();
-// 模拟课程数据
-const course = ref({
-  name: '高中数学 - 函数与导数',
-  teacher: '王老师',
-  progress: 80,
-  desc: '本课程涵盖函数与导数的基础知识、典型题型与解题技巧，帮助你夯实数学基础。',
-  chapter: '第5章 导数应用',
-  totalChapters: 12,
-  lastUpdate: '2024-03-20 20:15'
-});
-// 模拟章节与概念
-const chapters = ref([
-  {
-    id: 1,
-    name: '第1章 函数的基本概念',
-    progress: 100,
-    concepts: ['函数的定义', '函数的表示方法', '函数的性质']
-  },
-  {
-    id: 2,
-    name: '第2章 函数的图像与性质',
-    progress: 100,
-    concepts: ['奇偶性', '单调性', '周期性', '最值']
-  },
-  {
-    id: 3,
-    name: '第3章 导数的概念',
-    progress: 80,
-    concepts: ['导数的定义', '导数的几何意义', '可导与连续']
-  },
-  {
-    id: 4,
-    name: '第4章 导数的运算',
-    progress: 60,
-    concepts: ['基本求导法则', '复合函数求导', '隐函数求导']
-  },
-  {
-    id: 5,
-    name: '第5章 导数应用',
-    progress: 30,
-    concepts: ['单调性与导数', '极值与最值', '函数图像的凹凸性']
+const courseId = route.params.id;
+const course = ref({});
+const chapters = ref([]);
+
+async function fetchCourseDetail() {
+  try {
+    const res = await getCourseDetail(courseId);
+    // 假设API返回结构为 { data: { course: {...}, chapters: [...] } }
+    if (res.data) {
+      course.value = res.data.course || {};
+      chapters.value = res.data.chapters || [];
+    }
+  } catch (e) {
+    ElMessage.error('获取课程详情失败');
   }
-]);
+}
+
+onMounted(fetchCourseDetail);
+
 // 智能问答
 const qaList = ref([
   { role: 'ai', text: '欢迎提问，我会尽力为你解答课程相关问题！' }

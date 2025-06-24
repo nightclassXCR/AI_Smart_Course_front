@@ -23,6 +23,11 @@ const routes = [
         component: () => import('@/views/courseManagement.vue')
       },
       {
+        path: 'courseDetail/:id',
+        name: 'TeacherCourseDetail',
+        component: () => import('@/views/TeacherCourseDetail.vue')
+      },
+      {
         path: 'studentManagement',
         name: 'StudentManagement',
         component: () => import('@/views/studentManagement.vue')
@@ -46,6 +51,16 @@ const routes = [
         path: 'profile',
         name: 'TeacherProfile',
         component: () => import('@/views/TeacherProfile.vue')
+      },
+      {
+        path: 'questionBank',
+        name: 'QuestionBank',
+        component: () => import('@/views/QuestionBank.vue')
+      },
+      {
+        path: 'questionSelect',
+        name: 'QuestionSelect',
+        component: () => import('@/views/QuestionSelect.vue')
       }
     ]
   },
@@ -94,6 +109,11 @@ const routes = [
         path: 'course/:id',
         name: 'CourseDetail',
         component: () => import('@/views/CourseDetail.vue')
+      },
+      {
+        path: 'courseIntro/:id',
+        name: 'CourseIntro',
+        component: () => import('@/views/CourseIntro.vue')
       }
     ]
   },
@@ -102,6 +122,11 @@ const routes = [
     path: '/',
     name: 'HomePage',
     component: () => import('@/views/HomePage.vue')
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/ForgotPassword.vue')
   }
 ];
 

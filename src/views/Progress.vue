@@ -48,15 +48,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { getStudentProgress } from '@/api/progress';
+import { ElMessage } from 'element-plus';
 
-const progressList = ref([
-  { course: '高中数学 - 函数与导数', chapter: '第5章 导数应用', progress: 80, lastUpdate: '2024-03-20 20:15' },
-  { course: '高中物理 - 力学基础', chapter: '第3章 牛顿定律', progress: 60, lastUpdate: '2024-03-19 18:30' },
-  { course: '高中化学 - 有机化学', chapter: '第2章 有机反应', progress: 100, lastUpdate: '2024-03-18 21:00' }
-]);
+const progressList = ref([]);
 const search = ref('');
 const activeTab = ref('all');
+
+const fetchProgress = async () => {
+  try {
+    const res = await getStudentProgress();
+    progressList.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('获取进度数据失败');
+  }
+};
+
+onMounted(fetchProgress);
 
 const filteredProgress = computed(() => {
   let list = progressList.value;

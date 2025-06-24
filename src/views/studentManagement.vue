@@ -19,7 +19,7 @@
         <el-table-column label="操作">
           <template #default="scope">
             <el-button size="small" @click="editStudent(scope.row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="deleteStudent(scope.row.id)">删除</el-button>
+            <el-button size="small" type="danger" @click="deleteStudentHandler(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -55,15 +55,25 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getStudentList, addStudent, updateStudent, deleteStudent as delStudent } from '@/api/student';
+import { getStudentList, createStudent, updateStudent, deleteStudent as delStudent } from '@/api/student';
+import { ElMessage } from 'element-plus';
 
 const studentList = ref([]);
 const showAdd = ref(false);
 const form = ref({ name: '', studentId: '', email: '', class: '' });
 const editId = ref(null);
+const loading = ref(false);
 
 const fetchStudents = async () => {
-  studentList.value = await getStudentList();
+  loading.value = true;
+  try {
+    const res = await getStudentList();
+    studentList.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('获取学生列表失败');
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(fetchStudents);
@@ -74,23 +84,37 @@ function editStudent(row) {
   showAdd.value = true;
 }
 
-function saveStudent() {
-  if (editId.value) {
-    updateStudent(editId.value, form.value).then(() => {
-      fetchStudents();
-      showAdd.value = false;
-      editId.value = null;
-    });
-  } else {
-    addStudent(form.value).then(() => {
-      fetchStudents();
-      showAdd.value = false;
-    });
+async function saveStudent() {
+  loading.value = true;
+  try {
+    if (editId.value) {
+      await updateStudent({ id: editId.value, ...form.value });
+      ElMessage.success('学生信息更新成功');
+    } else {
+      await createStudent(form.value);
+      ElMessage.success('学生创建成功');
+    }
+    showAdd.value = false;
+    editId.value = null;
+    fetchStudents();
+  } catch (e) {
+    ElMessage.error(editId.value ? '学生信息更新失败' : '学生创建失败');
+  } finally {
+    loading.value = false;
   }
 }
 
-function deleteStudent(id) {
-  delStudent(id).then(fetchStudents);
+async function deleteStudentHandler(id) {
+  loading.value = true;
+  try {
+    await delStudent(id);
+    ElMessage.success('学生删除成功');
+    fetchStudents();
+  } catch (e) {
+    ElMessage.error('学生删除失败');
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 

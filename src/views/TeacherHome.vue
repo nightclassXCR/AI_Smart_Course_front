@@ -89,11 +89,25 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { getCourseList } from '@/api/course';
+import { ElMessage } from 'element-plus';
 const router = useRouter();
-// 这些数据将由Dashboard.vue通过<router-view v-slot>传递
 const props = defineProps(['userInfo', 'stats', 'courses', 'pendingTasks']);
+const courses = ref([]);
+
+async function fetchCourses() {
+  try {
+    const res = await getCourseList();
+    courses.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('获取课程列表失败');
+  }
+}
+
+onMounted(fetchCourses);
+
 function viewDetail(course) {
   router.push(`/teacher/courseManagement?id=${course.id}`);
 }

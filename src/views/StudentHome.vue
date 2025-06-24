@@ -10,17 +10,31 @@
         </div>
       </div>
     </div>
-    <!-- 新增：全部课程卡片，紧跟欢迎区下方 -->
-    <div class="all-courses-row">
+    <!-- 新增：全部课程与为你推荐横向并排 -->
+    <div class="top-row">
+      <div class="module-card recommend-card">
+        <div class="module-header">
+          <span class="module-title">为你推荐</span>
+        </div>
+        <div v-if="recommendList && recommendList.length" class="overview-list">
+          <div v-for="rec in recommendList" :key="rec.id" class="overview-item" @click="$router.push(`/student/course/${rec.id}`)">
+            <div class="overview-title">{{ rec.name }}</div>
+            <div class="overview-meta">{{ rec.teacher }} | {{ rec.progress }}% 进度</div>
+            <el-progress :percentage="rec.progress" :stroke-width="8" />
+          </div>
+        </div>
+        <div v-else class="empty-module">暂无推荐</div>
+      </div>
       <div class="module-card all-courses-card">
         <div class="module-header">
           <span class="module-title">全部课程</span>
         </div>
         <div v-if="allCourses && allCourses.length" class="overview-list">
-          <div v-for="course in allCourses" :key="course.id" class="overview-item" @click="$router.push(`/student/course/${course.id}`)">
-            <div class="overview-title">{{ course.name }}</div>
+          <div v-for="course in allCourses" :key="course.id" class="overview-item">
+            <div class="overview-title" @click="$router.push(`/student/courseIntro/${course.id}`)" style="cursor:pointer; color:#409EFF;">{{ course.name }}</div>
             <div class="overview-meta">{{ course.teacher }} | {{ course.progress }}% 进度</div>
             <el-progress :percentage="course.progress" :stroke-width="8" />
+            <el-button type="primary" size="small" @click="enrollCourse(course.id)">选课</el-button>
           </div>
         </div>
         <div v-else class="empty-module">暂无课程</div>
@@ -63,7 +77,7 @@
     </div>
     <!-- 课程/作业/动态模块 -->
     <div class="modules-row">
-      <!-- 课程总览模块 -->
+      <!-- 课程总览模块
       <div class="module-card course-overview-card">
         <div class="module-header">
           <span class="module-title">课程总览</span>
@@ -77,7 +91,7 @@
           </div>
         </div>
         <div v-else class="empty-module">暂无课程</div>
-      </div>
+      </div> -->
       <!-- 我的课程模块 -->
       <div class="module-card">
         <div class="module-header">
@@ -125,9 +139,41 @@
 </template>
 
 <script>
+import { getAllCourses, enrollCourse } from '@/api/course';
+import { ElMessage } from 'element-plus';
 export default {
   name: 'StudentHome',
-  props: ['userInfo', 'stats', 'courses', 'assignments', 'recentActivities', 'allCourses']
+  props: ['userInfo', 'stats', 'courses', 'assignments', 'recentActivities', 'allCourses'],
+  data() {
+    return {
+      recommendList: [],
+      allCourses: []
+    }
+  },
+  async created() {
+    await this.fetchAllCourses();
+  },
+  methods: {
+    async fetchAllCourses() {
+      try {
+        const res = await getAllCourses();
+        this.allCourses = res.data?.list || res.data || [];
+        // 推荐课程取前3门
+        this.recommendList = this.allCourses.slice(0, 3);
+      } catch (e) {
+        ElMessage.error('获取课程列表失败');
+      }
+    },
+    async enrollCourse(courseId) {
+      try {
+        await enrollCourse(courseId);
+        ElMessage.success('选课成功');
+        this.fetchAllCourses();
+      } catch (e) {
+        ElMessage.error('选课失败');
+      }
+    }
+  }
 }
 </script>
 
@@ -284,21 +330,18 @@ export default {
   font-size: 13px;
   margin-bottom: 4px;
 }
-.all-courses-card {
-  min-width: 320px;
-  max-width: 420px;
-  overflow-x: auto;
-}
-.all-courses-row {
+.top-row {
   width: 100%;
   display: flex;
+  gap: 24px;
   justify-content: flex-start;
   margin-bottom: 18px;
 }
-.all-courses-card {
+.all-courses-card, .recommend-card {
   min-width: 320px;
   max-width: 600px;
-  margin: 0 auto;
+  flex: 1;
+  margin: 0;
   overflow-x: auto;
 }
 @media (max-width: 900px) {
@@ -307,6 +350,10 @@ export default {
     padding: 10px 2vw;
   }
   .stats-grid, .modules-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .top-row {
     flex-direction: column;
     gap: 12px;
   }

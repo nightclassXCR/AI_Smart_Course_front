@@ -23,7 +23,7 @@
         <el-table-column label="操作">
           <template #default="scope">
             <el-button size="small" @click="downloadResource(scope.row)">下载</el-button>
-            <el-button size="small" type="danger" @click="deleteResource(scope.row.id)">删除</el-button>
+            <el-button size="small" type="danger" @click="deleteResourceHandler(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -71,18 +71,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { getResourceList, createResource, deleteResource as delResource } from '@/api/resource';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
-const resourceList = ref([
-  { id: 1, name: 'Vue 3 入门指南.pdf', type: '文档', size: '2.5 MB', uploadTime: '2023-04-10 10:30', fileUrl: 'https://example.com/vue3-guide.pdf' },
-  { id: 2, name: 'Element Plus 教程.mp4', type: '视频', size: '50.1 MB', uploadTime: '2023-04-12 14:00', fileUrl: 'https://example.com/element-plus-tutorial.mp4' },
-  { id: 3, name: '项目设计图.png', type: '图片', size: '1.2 MB', uploadTime: '2023-04-15 09:15', fileUrl: 'https://example.com/design-mockup.png' },
-]);
-
+const resourceList = ref([]);
 const showUpload = ref(false);
 const uploadForm = ref({ name: '', type: '', file: null });
 const uploadRef = ref(null);
+const loading = ref(false);
+
+const fetchResources = async () => {
+  loading.value = true;
+  try {
+    const res = await getResourceList();
+    resourceList.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('获取资源列表失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(fetchResources);
 
 function handleFileChange(file) {
   uploadForm.value.file = file.raw;
@@ -109,19 +120,21 @@ async function submitUpload() {
     ElMessage.error('请选择要上传的文件');
     return;
   }
-
-  const newResource = {
-    id: resourceList.value.length ? Math.max(...resourceList.value.map(r => r.id)) + 1 : 1,
-    name: uploadForm.value.name,
-    type: uploadForm.value.type,
-    size: uploadForm.value.file ? (uploadForm.value.file.size / (1024 * 1024)).toFixed(2) + ' MB' : '0 MB',
-    uploadTime: new Date().toLocaleString('zh-CN', { hour12: false }),
-    fileUrl: uploadForm.value.file ? URL.createObjectURL(uploadForm.value.file) : null
-  };
-
-  resourceList.value.push(newResource);
-  ElMessage.success('资源上传成功！');
-  closeUploadDialog();
+  loading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('name', uploadForm.value.name);
+    formData.append('type', uploadForm.value.type);
+    formData.append('file', uploadForm.value.file);
+    await createResource(formData);
+    ElMessage.success('资源上传成功！');
+    closeUploadDialog();
+    fetchResources();
+  } catch (e) {
+    ElMessage.error('资源上传失败');
+  } finally {
+    loading.value = false;
+  }
 }
 
 function downloadResource(row) {
@@ -139,22 +152,19 @@ function downloadResource(row) {
   }
 }
 
-function deleteResource(id) {
-  ElMessageBox.confirm('确定要删除此资源吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
-    const initialLength = resourceList.value.length;
-    resourceList.value = resourceList.value.filter(resource => resource.id !== id);
-    if (resourceList.value.length < initialLength) {
-      ElMessage.success('资源删除成功！');
-    } else {
-      ElMessage.error('删除失败，未找到该资源。');
-    }
-  }).catch(() => {
-    ElMessage.info('已取消删除操作');
-  });
+async function deleteResourceHandler(id) {
+  try {
+    await ElMessageBox.confirm('确定要删除此资源吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await delResource(id);
+    ElMessage.success('资源删除成功！');
+    fetchResources();
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('删除失败');
+  }
 }
 </script>
 

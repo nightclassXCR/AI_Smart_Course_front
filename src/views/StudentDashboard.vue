@@ -1,11 +1,11 @@
 <template>
   <div class="student-dashboard">
-    <!-- 头部导航（Assignment风格） -->
+    <!-- 响应式导航栏 -->
     <nav class="navbar">
       <div class="nav-brand">
         <div class="logo">📚 智能学习平台</div>
       </div>
-      <div class="nav-menu">
+      <div class="nav-menu" :class="{ 'is-mobile': isMobile, 'show-mobile': showMobileMenu }">
         <router-link to="/student" class="nav-item">首页</router-link>
         <router-link to="/student/myCourse" class="nav-item">我的课程</router-link>
         <router-link to="/student/assignment" class="nav-item">我的作业</router-link>
@@ -19,6 +19,9 @@
           <button class="search-btn">🔍</button>
         </div>
         <div class="notification-btn">🔔</div>
+        <div class="menu-btn" @click="toggleMobileMenu" v-if="isMobile">
+          <i class="el-icon-menu"></i>
+        </div>
       </div>
     </nav>
     <!-- 主要内容区域 -->
@@ -31,6 +34,7 @@
           :courses="courses"
           :assignments="assignments"
           :recentActivities="recentActivities"
+          :allCourses="courses"
         />
       </router-view>
     </main>
@@ -60,12 +64,19 @@ export default {
       },
       courses: [],
       assignments: [],
-      recentActivities: []
+      recentActivities: [],
+      isMobile: false,
+      showMobileMenu: false
     }
   },
   async created() {
     await this.loadUserInfo()
     await this.loadDashboardData()
+    this.checkMobile()
+    window.addEventListener('resize', this.checkMobile)
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile)
   },
   methods: {
     async loadUserInfo() {
@@ -94,6 +105,13 @@ export default {
         this.$message.error('加载数据失败')
         console.error('Failed to load dashboard data:', error)
       }
+    },
+    checkMobile() {
+      this.isMobile = window.innerWidth < 900
+      if (!this.isMobile) this.showMobileMenu = false
+    },
+    toggleMobileMenu() {
+      this.showMobileMenu = !this.showMobileMenu
     }
   }
 }
@@ -108,6 +126,7 @@ export default {
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
   padding: 0 32px;
+  position: relative;
 }
 .nav-brand .logo {
   font-size: 20px;
@@ -118,7 +137,10 @@ export default {
 }
 .nav-menu {
   display: flex;
-  gap: 32px;
+  gap: 16px;
+  white-space: nowrap;
+  align-items: center;
+  transition: all 0.3s;
 }
 .nav-item {
   color: #222;
@@ -126,6 +148,7 @@ export default {
   text-decoration: none;
   padding: 0 8px;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 .nav-item.router-link-exact-active,
 .nav-item.active {
@@ -140,6 +163,32 @@ export default {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+.menu-btn {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+@media (max-width: 900px) {
+  .nav-menu {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100vw;
+    background: #fff;
+    flex-direction: column;
+    gap: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 100;
+  }
+  .nav-menu.is-mobile.show-mobile {
+    display: flex;
+  }
+  .menu-btn {
+    display: block;
+  }
 }
 .search-box {
   display: flex;

@@ -1,20 +1,44 @@
 import request from './request';
 
+// 获取资源列表
 export function getResourceList(params) {
-  // mock: 实际应为request.get('/resources', { params })
-  return Promise.resolve([
-    { id: 1, name: '高三数学讲义.pdf', type: '文档', uploader: '王老师', uploadDate: '2024-03-20' },
-    { id: 2, name: '物理实验视频.mp4', type: '视频', uploader: '李老师', uploadDate: '2024-03-18' },
-    { id: 3, name: '化学知识点.png', type: '图片', uploader: '张老师', uploadDate: '2024-03-15' }
-  ]);
+  return request({
+    url: '/resource/list',
+    method: 'get',
+    params
+  });
 }
 
-export function uploadResource(data) {
-  // mock
-  return Promise.resolve({ success: true });
+// 新建资源
+export function createResource(data) {
+  return request({
+    url: '/resource/create',
+    method: 'post',
+    data
+  });
 }
 
-export function deleteResource(id) {
-  // mock
-  return Promise.resolve({ success: true });
+// 编辑资源
+export function updateResource(data) {
+  return request({
+    url: '/resource/update',
+    method: 'post',
+    data
+  });
+}
+
+// 删除资源
+export function deleteResource(resourceId) {
+  return request({
+    url: `/resource/delete/${resourceId}`,
+    method: 'delete'
+  });
+}
+
+// 获取资源详情
+export function getResourceDetail(resourceId) {
+  return request({
+    url: `/resource/detail/${resourceId}`,
+    method: 'get'
+  });
 } 

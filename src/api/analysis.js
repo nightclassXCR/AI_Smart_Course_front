@@ -1,5 +1,32 @@
 import request from './request';
 
+// 获取学习分析数据
+export function getAnalysisData(params) {
+  return request({
+    url: '/analysis/data',
+    method: 'get',
+    params
+  });
+}
+
+// 获取学生学习进度
+export function getStudentProgress(params) {
+  return request({
+    url: '/analysis/progress',
+    method: 'get',
+    params
+  });
+}
+
+// 获取课程学习统计
+export function getCourseStatistics(params) {
+  return request({
+    url: '/analysis/statistics',
+    method: 'get',
+    params
+  });
+}
+
 export function getLearningAnalysis(params) {
   // mock: 实际应为request.get('/analysis', { params })
   return Promise.resolve([

@@ -37,7 +37,7 @@
         </div>
         <div class="course-actions">
           <el-button size="small" @click="viewDetail(course)">详情</el-button>
-          <el-button size="small" type="danger" @click="quitCourse(course.id)">退选</el-button>
+          <el-button size="small" type="danger" @click="quitCourseHandler(course.id)">退选</el-button>
         </div>
       </div>
       <!-- 空状态 -->
@@ -51,17 +51,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { getMyCourses, quitCourse } from '@/api/course';
+import { ElMessage } from 'element-plus';
 
-const courseList = ref([
-  { id: 1, name: '高中数学 - 函数与导数', teacher: '王老师', progress: 80 },
-  { id: 2, name: '高中物理 - 力学基础', teacher: '李老师', progress: 60 },
-  { id: 3, name: '高中化学 - 有机化学', teacher: '张老师', progress: 100 }
-]);
+const courseList = ref([]);
 const search = ref('');
 const activeTab = ref('all');
 const router = useRouter();
+
+const fetchCourses = async () => {
+  try {
+    const res = await getMyCourses();
+    courseList.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('获取课程列表失败');
+  }
+};
+
+onMounted(fetchCourses);
 
 const filteredCourses = computed(() => {
   let list = courseList.value;
@@ -82,8 +91,14 @@ function setActiveTab(tab) {
 function viewDetail(row) {
   router.push(`/student/course/${row.id}`);
 }
-function quitCourse(id) {
-  courseList.value = courseList.value.filter(c => c.id !== id);
+async function quitCourseHandler(id) {
+  try {
+    await quitCourse(id);
+    ElMessage.success('退课成功');
+    fetchCourses();
+  } catch (e) {
+    ElMessage.error('退课失败');
+  }
 }
 function getEmptyMessage() {
   if (activeTab.value === 'ongoing') return '进行中的';

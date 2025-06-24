@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import {
   ElHeader,
   ElMain,
@@ -139,58 +139,39 @@ import {
   ElTable,
   ElTableColumn,
 } from 'element-plus';
+import { getAnalysisData, getLearningAnalysis } from '@/api/analysis';
+import { ElMessage } from 'element-plus';
 
-// 模拟数据
 const stats = ref({
-  totalStudyTime: 2847,
-  totalStudyTimeTrend: 12,
-  averageCompletionRate: 87.3,
-  averageCompletionRateTrend: 5.2,
-  activeStudents: 142,
-  activeStudentRate: 91,
-  excellentRate: 34.2,
-  excellentRateTrend: 2.8,
+  totalStudyTime: 0,
+  totalStudyTimeTrend: 0,
+  averageCompletionRate: 0,
+  averageCompletionRateTrend: 0,
+  activeStudents: 0,
+  activeStudentRate: 0,
+  excellentRate: 0,
+  excellentRateTrend: 0,
 });
-
 const filterTags = ref(['学科表现', '学习模式', '进度追踪', '智能洞察']);
 const activeFilter = ref('学科表现');
-const subjects = ref([
-  {
-    name: '数学',
-    averageScore: 85.2,
-    progress: 85,
-    change: '+3.2',
-    studentCount: 156,
-  },
-  {
-    name: '物理',
-    averageScore: 78.9,
-    progress: 79,
-    change: '+1.8',
-    studentCount: 142,
-  },
-  {
-    name: '化学',
-    averageScore: 82.1,
-    progress: 82,
-    change: '-0.5',
-    studentCount: 138,
-  },
-  {
-    name: '英语',
-    averageScore: 76.5,
-    progress: 77,
-    change: '+2.1',
-    studentCount: 165,
-  },
-  {
-    name: '语文',
-    averageScore: 81.3,
-    progress: 81,
-    change: '+1.2',
-    studentCount: 158,
-  },
-]);
+const subjects = ref([]);
+const analysisList = ref([]);
+
+const fetchAnalysis = async () => {
+  try {
+    const res = await getAnalysisData();
+    if (res.data) {
+      Object.assign(stats.value, res.data.stats || {});
+      subjects.value = res.data.subjects || [];
+    }
+    const tableRes = await getLearningAnalysis();
+    analysisList.value = tableRes.data || tableRes || [];
+  } catch (e) {
+    ElMessage.error('获取学习分析数据失败');
+  }
+};
+
+onMounted(fetchAnalysis);
 
 // 响应式数据
 const activeMenu = ref('analysis');
@@ -225,14 +206,6 @@ const getProgressColor = (progress) => {
   if (progress >= 60) return '#E6A23C';
   return '#F56C6C';
 };
-
-const analysisList = ref([
-  { subject: '数学', score: 88, rank: 3, progress: 85, advice: '保持良好，继续巩固难点。' },
-  { subject: '物理', score: 91, rank: 1, progress: 92, advice: '表现优秀，适当挑战更高难度。' },
-  { subject: '化学', score: 76, rank: 8, progress: 67, advice: '加强基础知识复习。' },
-  { subject: '英语', score: 68, rank: 15, progress: 45, advice: '多做阅读理解练习。' },
-  { subject: '语文', score: 82, rank: 6, progress: 78, advice: '作文部分需提升。' }
-]);
 </script>
 
 <style scoped>
