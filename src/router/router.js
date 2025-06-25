@@ -120,8 +120,7 @@ const routes = [
   // 默认首页
   {
     path: '/',
-    name: 'HomePage',
-    component: () => import('@/views/HomePage.vue')
+    redirect: '/login'
   },
   {
     path: '/forgot-password',
@@ -148,11 +147,11 @@ router.beforeEach((to, from, next) => {
     return next('/login');
   }
   // 老师端页面，学生访问时跳转学生首页
-  if (to.path.startsWith('/teacher') && user.role !== 'teacher') {
+  if (to.path.startsWith('/teacher') && user.role !== 'ROLE_TEACHER') {
     return next('/student');
   }
   // 学生端页面，老师访问时跳转老师首页
-  if (to.path.startsWith('/student') && user.role !== 'student') {
+  if (to.path.startsWith('/student') && user.role !== 'ROLE_STUDENT') {
     return next('/teacher');
   }
   next();

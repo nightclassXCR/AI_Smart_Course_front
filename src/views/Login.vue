@@ -99,104 +99,102 @@
     </div>
   </template>
   
-  <script>
+  <script setup>
+  import { ref, reactive } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { loginByEmail, loginByPhoneNumber } from '@/api/login'
   import axios from 'axios'
-  
-  export default {
-    name: 'Login',
-    data() {
-      return {
-        loginForm: {
-          username: '',
-          password: '',
-          remember: false
-        },
-        registerForm: {
-          username: '',
-          email: '',
-          name: '',
-          role: 'student',
-          password: '',
-          confirmPassword: ''
-        },
-        loading: false,
-        error: '',
-        showRegister: false
+
+  const router = useRouter()
+
+  const loginForm = reactive({
+    username: '',
+    password: '',
+    remember: false
+  })
+
+  const registerForm = reactive({
+    username: '',
+    email: '',
+    name: '',
+    role: 'student',
+    password: '',
+    confirmPassword: ''
+  })
+
+  const loading = ref(false)
+  const error = ref('')
+  const showRegister = ref(false)
+
+  function goToForgotPassword() {
+    router.push('/forgot-password')
+  }
+
+  async function handleLogin() {
+    loading.value = true
+    error.value = ''
+    try {
+      let response
+      const username = loginForm.username.trim()
+      const password = loginForm.password
+      if (/^\d{11}$/.test(username)) {
+        response = await loginByPhoneNumber({ phoneNumber: username, password })
+      } else if (/^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(username)) {
+        response = await loginByEmail({ email: username, password })
+      } else {
+        error.value = '请输入正确的邮箱或手机号'
+        loading.value = false
+        return
       }
-    },
-    methods: {
-      async handleLogin() {
-        this.loading = true
-        this.error = ''
-        
-        try {
-          const response = await axios.post('/api/auth/login', {
-            username: this.loginForm.username,
-            password: this.loginForm.password
-          })
-          
-          const { token, user } = response.data
-          
-          // 存储token和用户信息
-          localStorage.setItem('token', token)
-          localStorage.setItem('user', JSON.stringify(user))
-          
-          // 设置axios默认header
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-          
-          // 根据角色跳转
-          if (user.role === 'student') {
-            this.$router.push('/student')
-          } else {
-            this.$router.push('/teacher')
-          }
-          
-          this.$message.success('登录成功')
-        } catch (error) {
-          this.error = error.response?.data?.message || '登录失败，请检查用户名和密码'
-        } finally {
-          this.loading = false
-        }
-      },
-      
-      async handleRegister() {
-        if (this.registerForm.password !== this.registerForm.confirmPassword) {
-          this.$message.error('两次输入的密码不一致')
-          return
-        }
-        
-        try {
-          await axios.post('/api/auth/register', {
-            username: this.registerForm.username,
-            email: this.registerForm.email,
-            name: this.registerForm.name,
-            role: this.registerForm.role,
-            password: this.registerForm.password
-          })
-          
-          this.$message.success('注册成功，请登录')
-          this.showRegister = false
-          this.registerForm = {
-            username: '',
-            email: '',
-            name: '',
-            role: 'student',
-            password: '',
-            confirmPassword: ''
-          }
-        } catch (error) {
-          this.$message.error(error.response?.data?.message || '注册失败')
-        }
-      },
-      preview(role) {
-        // 游客身份预览
-        localStorage.setItem('user', JSON.stringify({ role, guest: true }))
-        this.$router.push(`/${role}`)
-      },
-      goToForgotPassword() {
-        this.$router.push('/forgot-password')
+      if (!response.token || !response.user) {
+        error.value = '登录失败，返回数据异常'
+        loading.value = false
+        return
       }
+      localStorage.setItem('token', response.token)
+      localStorage.setItem('user', JSON.stringify(response.user))
+      if (response.user.role === 'ROLE_STUDENT') {
+        router.push('/student')
+      } else if (response.user.role === 'ROLE_TEACHER') {
+        router.push('/teacher')
+      } else {
+        router.push('/')
+      }
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || '登录失败，请检查账号和密码'
+    } finally {
+      loading.value = false
     }
+  }
+
+  async function handleRegister() {
+    if (registerForm.password !== registerForm.confirmPassword) {
+      return
+    }
+    try {
+      await axios.post('/api/auth/register', {
+        username: registerForm.username,
+        email: registerForm.email,
+        name: registerForm.name,
+        role: registerForm.role,
+        password: registerForm.password
+      })
+      showRegister.value = false
+      Object.assign(registerForm, {
+        username: '',
+        email: '',
+        name: '',
+        role: 'student',
+        password: '',
+        confirmPassword: ''
+      })
+    } catch (err) {
+    }
+  }
+
+  function preview(role) {
+    localStorage.setItem('user', JSON.stringify({ role, guest: true }))
+    router.push(`/${role}`)
   }
   </script>
   

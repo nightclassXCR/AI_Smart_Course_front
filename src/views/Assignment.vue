@@ -132,7 +132,7 @@
   </template>
   
   <script>
-  import axios from 'axios'
+  import { getMyAssignments } from '@/api/homework';
   
   export default {
     name: 'AssignmentList',
@@ -163,14 +163,14 @@
     methods: {
       async loadAssignments() {
         try {
-          this.loading = true
-          const response = await axios.get('/api/student/assignments')
-          this.assignments = response.data.assignments
+          this.loading = true;
+          const response = await getMyAssignments();
+          this.assignments = response.data.assignments || response.data.list || response.data || [];
         } catch (error) {
-          console.error('Failed to load assignments:', error)
-          this.$message.error('加载作业失败')
+          console.error('Failed to load assignments:', error);
+          this.$message.error('加载作业失败');
         } finally {
-          this.loading = false
+          this.loading = false;
         }
       },
       setActiveTab(tab) {

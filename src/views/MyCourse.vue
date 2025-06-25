@@ -10,15 +10,15 @@
         </div>
       </div>
       <div class="search-box">
-        <input v-model="search" type="text" placeholder="搜索课程..." />
-        <button class="search-btn">🔍</button>
+        <input v-model="search" type="text" placeholder="搜索课程..." @keyup.enter="handleSearch" />
+        <button class="search-btn" @click="handleSearch">🔍</button>
       </div>
     </div>
     <!-- 标签切换 -->
     <div class="filter-tabs">
       <button :class="['tab', { active: activeTab === 'all' }]" @click="setActiveTab('all')">全部课程</button>
-      <button :class="['tab', { active: activeTab === 'ongoing' }]" @click="setActiveTab('ongoing')">进行中</button>
-      <button :class="['tab', { active: activeTab === 'finished' }]" @click="setActiveTab('finished')">已完成</button>
+      <!-- <button :class="['tab', { active: activeTab === 'ongoing' }]" @click="setActiveTab('ongoing')">进行中</button>
+      <button :class="['tab', { active: activeTab === 'finished' }]" @click="setActiveTab('finished')">已完成</button> -->
     </div>
     <!-- 课程卡片列表 -->
     <div class="course-list">
@@ -53,7 +53,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getMyCourses, quitCourse } from '@/api/course';
+import { getMyCourses, quitCourse, searchMyCourses } from '@/api/course';
 import { ElMessage } from 'element-plus';
 
 const courseList = ref([]);
@@ -67,6 +67,19 @@ const fetchCourses = async () => {
     courseList.value = res.data?.list || res.data || [];
   } catch (e) {
     ElMessage.error('获取课程列表失败');
+  }
+};
+
+const handleSearch = async () => {
+  if (!search.value.trim()) {
+    fetchCourses(); // 关键词为空时恢复全部
+    return;
+  }
+  try {
+    const res = await searchMyCourses(search.value.trim());
+    courseList.value = res.data?.list || res.data || [];
+  } catch (e) {
+    ElMessage.error('搜索失败');
   }
 };
 

@@ -2,43 +2,102 @@
   <div class="profile-container">
     <!-- 顶部头像昵称区 -->
     <div class="profile-header">
-      <el-avatar :size="72" :src="teacher.avatar || defaultAvatar" />
+      <el-avatar :size="72" :src="user.avatar || defaultAvatar" />
       <div class="profile-info">
-        <div class="profile-name">{{ teacher.name || '教师' }}</div>
-        <div class="profile-id">工号：{{ teacher.id || 'T20240001' }}</div>
+        <div class="profile-name">{{ user.name || '用户' }}</div>
+        <div class="profile-id">ID：{{ user.id || '未登录' }}</div>
       </div>
     </div>
     <!-- 基本信息卡片 -->
     <div class="info-card">
-      <div class="info-row"><span>院系：</span>{{ teacher.department || '计算机学院' }}</div>
-      <div class="info-row"><span>联系方式：</span>{{ teacher.phone || '未填写' }}</div>
-      <div class="info-row"><span>邮箱：</span>{{ teacher.email || '未填写' }}</div>
+      <div class="info-row"><span>邮箱：</span>{{ user.email || '未填写' }}</div>
+      <div class="info-row"><span>联系方式：</span>{{ user.phoneNumber || '未填写' }}</div>
+      <div class="info-row"><span>身份：</span>{{ roleText }}</div>
     </div>
     <!-- 操作按钮区 -->
     <div class="profile-actions">
-      <el-button type="primary" @click="editProfile">修改资料</el-button>
+      <el-button type="primary" @click="openEdit">修改资料</el-button>
       <el-button type="danger" @click="logout">退出登录</el-button>
     </div>
+    <!-- 修改资料弹窗 -->
+    <el-dialog v-model="showEdit" title="修改资料" width="400px">
+      <el-form :model="editForm" label-width="80px">
+        <el-form-item label="姓名">
+          <el-input v-model="editForm.name" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="editForm.email" />
+        </el-form-item>
+        <el-form-item label="联系方式">
+          <el-input v-model="editForm.phoneNumber" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEdit = false">取消</el-button>
+        <el-button type="primary" @click="saveEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { updateUser } from '@/api/user';
 const router = useRouter();
 const defaultAvatar = 'https://img1.baidu.com/it/u=1618884812,3704489962&fm=253&fmt=auto&app=138&f=JPEG?w=200&h=200';
-const teacher = ref({
-  name: '李教授',
-  id: 'T20240001',
-  avatar: '',
-  department: '计算机学院',
-  phone: '',
-  email: ''
+const user = ref({});
+const showEdit = ref(false);
+const editForm = ref({ name: '', email: '', phoneNumber: '' });
+
+onMounted(() => {
+  try {
+    const u = JSON.parse(localStorage.getItem('user'));
+    user.value = u || {};
+  } catch {
+    user.value = {};
+  }
 });
-function editProfile() {
-  // 实际应弹窗或跳转到资料编辑页
-  alert('资料编辑功能开发中');
+
+const roleText = computed(() => {
+  if (user.value.role === 'ROLE_STUDENT') return '学生';
+  if (user.value.role === 'ROLE_TEACHER') return '教师';
+  return '未知';
+});
+
+function openEdit() {
+  editForm.value = {
+    name: user.value.name || '',
+    email: user.value.email || '',
+    phoneNumber: user.value.phoneNumber || ''
+  };
+  showEdit.value = true;
 }
+
+async function saveEdit() {
+  try {
+    const res = await updateUser({
+      ...user.value,
+      name: editForm.value.name,
+      email: editForm.value.email,
+      phoneNumber: editForm.value.phoneNumber
+    });
+    if (res === 1) {
+      user.value.name = editForm.value.name;
+      user.value.email = editForm.value.email;
+      user.value.phoneNumber = editForm.value.phoneNumber;
+      localStorage.setItem('user', JSON.stringify(user.value));
+      showEdit.value = false;
+      ElMessage.success('资料已更新');
+    } else {
+      ElMessage.error('资料更新失败');
+    }
+  } catch (e) {
+    ElMessage.error('资料更新失败');
+  }
+}
+
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');

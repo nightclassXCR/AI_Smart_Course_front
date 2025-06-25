@@ -41,4 +41,7 @@ export function getResourceDetail(resourceId) {
     url: `/resource/detail/${resourceId}`,
     method: 'get'
   });
-} 
+}
+
+// 获取第2页，每页20条
+getResourceList({ pageNum: 2, pageSize: 20 }) 

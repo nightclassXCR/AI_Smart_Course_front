@@ -17,7 +17,7 @@
           <span class="module-title">为你推荐</span>
         </div>
         <div v-if="recommendList && recommendList.length" class="overview-list">
-          <div v-for="rec in recommendList" :key="rec.id" class="overview-item" @click="$router.push(`/student/course/${rec.id}`)">
+          <div v-for="rec in recommendList" :key="rec.id" class="overview-item" @click="router.push(`/student/course/${rec.id}`)">
             <div class="overview-title">{{ rec.name }}</div>
             <div class="overview-meta">{{ rec.teacher }} | {{ rec.progress }}% 进度</div>
             <el-progress :percentage="rec.progress" :stroke-width="8" />
@@ -31,10 +31,10 @@
         </div>
         <div v-if="allCourses && allCourses.length" class="overview-list">
           <div v-for="course in allCourses" :key="course.id" class="overview-item">
-            <div class="overview-title" @click="$router.push(`/student/courseIntro/${course.id}`)" style="cursor:pointer; color:#409EFF;">{{ course.name }}</div>
+            <div class="overview-title" @click="router.push(`/student/courseIntro/${course.id}`)" style="cursor:pointer; color:#409EFF;">{{ course.name }}</div>
             <div class="overview-meta">{{ course.teacher }} | {{ course.progress }}% 进度</div>
             <el-progress :percentage="course.progress" :stroke-width="8" />
-            <el-button type="primary" size="small" @click="enrollCourse(course.id)">选课</el-button>
+            <el-button type="primary" size="small" @click="enrollCourseHandler(course.id)">选课</el-button>
           </div>
         </div>
         <div v-else class="empty-module">暂无课程</div>
@@ -96,7 +96,7 @@
       <div class="module-card">
         <div class="module-header">
           <span class="module-title">我的课程</span>
-          <el-button type="text" @click="$router.push('/student/myCourse')">查看全部</el-button>
+          <el-button type="text" @click="router.push('/student/myCourse')">查看全部</el-button>
         </div>
         <div v-if="courses && courses.length" class="module-list">
           <div v-for="course in courses.slice(0,2)" :key="course.id" class="module-item">
@@ -111,7 +111,7 @@
       <div class="module-card">
         <div class="module-header">
           <span class="module-title">我的作业</span>
-          <el-button type="text" @click="$router.push('/student/assignment')">查看全部</el-button>
+          <el-button type="text" @click="router.push('/student/assignment')">查看全部</el-button>
         </div>
         <div v-if="assignments && assignments.length" class="module-list">
           <div v-for="hw in assignments.slice(0,2)" :key="hw.id" class="module-item">
@@ -122,7 +122,7 @@
         <div v-else class="empty-module">暂无作业</div>
       </div>
       <!-- 最近动态模块 -->
-      <div class="module-card">
+      <!-- <div class="module-card">
         <div class="module-header">
           <span class="module-title">最近活动</span>
         </div>
@@ -133,48 +133,51 @@
           </div>
         </div>
         <div v-else class="empty-module">暂无动态</div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
-<script>
-import { getAllCourses, enrollCourse } from '@/api/course';
-import { ElMessage } from 'element-plus';
-export default {
-  name: 'StudentHome',
-  props: ['userInfo', 'stats', 'courses', 'assignments', 'recentActivities', 'allCourses'],
-  data() {
-    return {
-      recommendList: [],
-      allCourses: []
-    }
-  },
-  async created() {
-    await this.fetchAllCourses();
-  },
-  methods: {
-    async fetchAllCourses() {
-      try {
-        const res = await getAllCourses();
-        this.allCourses = res.data?.list || res.data || [];
-        // 推荐课程取前3门
-        this.recommendList = this.allCourses.slice(0, 3);
-      } catch (e) {
-        ElMessage.error('获取课程列表失败');
-      }
-    },
-    async enrollCourse(courseId) {
-      try {
-        await enrollCourse(courseId);
-        ElMessage.success('选课成功');
-        this.fetchAllCourses();
-      } catch (e) {
-        ElMessage.error('选课失败');
-      }
-    }
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getAllCourses, enrollCourse } from '@/api/course'
+import { ElMessage } from 'element-plus'
+import { useAttrs } from 'vue'
+
+const router = useRouter()
+const attrs = useAttrs()
+
+// 接收父组件传递的props
+const userInfo = ref(attrs.userInfo || {})
+const stats = ref(attrs.stats || {})
+const courses = ref(attrs.courses || [])
+const assignments = ref(attrs.assignments || [])
+const recentActivities = ref(attrs.recentActivities || [])
+const allCourses = ref([])
+const recommendList = ref([])
+
+async function fetchAllCourses() {
+  try {
+    const res = await getAllCourses()
+    allCourses.value = res.data?.list || res.data || []
+    recommendList.value = allCourses.value.slice(0, 3)
+  } catch (e) {
+    ElMessage.error('获取课程列表失败')
   }
 }
+
+async function enrollCourseHandler(courseId) {
+  try {
+    await enrollCourse(courseId)
+    ElMessage.success('选课成功')
+    fetchAllCourses()
+  } catch (e) {
+    ElMessage.error('选课失败')
+  }
+}
+
+onMounted(fetchAllCourses)
 </script>
 
 <style scoped>
