@@ -5,7 +5,7 @@ import request from './request'
 // 获取课程列表
 export function getCourseList(params) {
   return request({
-    url: '/course/list',
+    url: '/courses',
     method: 'get',
     params
   });
@@ -14,7 +14,7 @@ export function getCourseList(params) {
 // 新建课程
 export function createCourse(data) {
   return request({
-    url: '/course/create',
+    url: '/courses',
     method: 'post',
     data
   });
@@ -23,7 +23,7 @@ export function createCourse(data) {
 // 编辑课程
 export function updateCourse(data) {
   return request({
-    url: '/course/update',
+    url: '/courses/update',
     method: 'post',
     data
   });
@@ -32,7 +32,7 @@ export function updateCourse(data) {
 // 删除课程
 export function deleteCourse(courseId) {
   return request({
-    url: `/course/delete/${courseId}`,
+    url: `/courses/delete/${courseId}`,
     method: 'delete'
   });
 }
@@ -40,7 +40,7 @@ export function deleteCourse(courseId) {
 // 获取课程详情
 export function getCourseDetail(courseId) {
   return request({
-    url: `/course/detail/${courseId}`,
+    url: `/courses/detail/${courseId}`,
     method: 'get'
   });
 }

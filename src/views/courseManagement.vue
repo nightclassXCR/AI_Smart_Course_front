@@ -39,7 +39,7 @@
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="授课教师">
-          <el-input v-model="form.teacher" />
+          <el-input v-model="form.teacherId" />
         </el-form-item>
         <el-form-item label="简介">
           <el-input v-model="form.description" type="textarea" />
@@ -62,7 +62,7 @@ const router = useRouter();
 
 const courseList = ref([]);
 const showAdd = ref(false);
-const form = ref({ name: '', teacher: '', description: '' });
+const form = ref({ name: '', teacherId: '', description: '' });
 const editId = ref(null);
 const loading = ref(false);
 
