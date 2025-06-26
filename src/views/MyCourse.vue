@@ -17,20 +17,20 @@
     <!-- 标签切换 -->
     <div class="filter-tabs">
       <button :class="['tab', { active: activeTab === 'all' }]" @click="setActiveTab('all')">全部课程</button>
-      <!-- <button :class="['tab', { active: activeTab === 'ongoing' }]" @click="setActiveTab('ongoing')">进行中</button>
-      <button :class="['tab', { active: activeTab === 'finished' }]" @click="setActiveTab('finished')">已完成</button> -->
+      <button :class="['tab', { active: activeTab === 'ongoing' }]" @click="setActiveTab('ongoing')">进行中</button>
+      <button :class="['tab', { active: activeTab === 'finished' }]" @click="setActiveTab('finished')">已完成</button>
     </div>
     <!-- 课程卡片列表 -->
     <div class="course-list">
       <div v-for="course in filteredCourses" :key="course.id" class="course-card">
         <div class="course-header">
           <div class="course-title">{{ course.name }}</div>
-          <div class="course-status" :class="course.progress >= 100 ? 'finished' : 'ongoing'">
-            {{ course.progress >= 100 ? '已完成' : '进行中' }}
+          <div class="course-status" :class="(course.status_student === 'completed' || course.statusStudent === 'completed') ? 'finished' : 'ongoing'">
+            {{ (course.status_student === 'completed' || course.statusStudent === 'completed') ? '已完成' : '进行中' }}
           </div>
         </div>
         <div class="course-meta">
-          <span>授课教师：{{ course.teacher }}</span>
+          <span>授课教师：{{ course.teacherName || course.teacher }}</span>
         </div>
         <div class="course-progress">
           <!-- <el-progress :percentage="course.progress" :stroke-width="16" /> -->
@@ -88,9 +88,9 @@ onMounted(fetchCourses);
 const filteredCourses = computed(() => {
   let list = courseList.value;
   if (activeTab.value === 'ongoing') {
-    list = list.filter(c => c.progress < 100);
+    list = list.filter(c => (c.status_student === 'underway' || c.statusStudent === 'underway'));
   } else if (activeTab.value === 'finished') {
-    list = list.filter(c => c.progress >= 100);
+    list = list.filter(c => (c.status_student === 'completed' || c.statusStudent === 'completed'));
   }
   if (search.value.trim()) {
     list = list.filter(c => c.name.includes(search.value.trim()));
@@ -100,6 +100,9 @@ const filteredCourses = computed(() => {
 
 function setActiveTab(tab) {
   activeTab.value = tab;
+  if (!search.value.trim()) {
+    fetchCourses();
+  }
 }
 function viewDetail(row) {
   router.push(`/student/course/${row.id}`);
