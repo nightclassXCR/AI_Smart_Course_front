@@ -17,9 +17,9 @@
         :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}"
       >
         <el-table-column prop="name" label="资源名称" />
-        <el-table-column prop="type" label="类型" />
+        <el-table-column prop="fileType" label="类型" />
         <el-table-column prop="size" label="大小" />
-        <el-table-column prop="uploadTime" label="上传时间" />
+        <el-table-column prop="updatedAt" label="上传时间" />
         <el-table-column label="操作">
           <template #default="scope">
             <el-button size="small" @click="downloadResource(scope.row)">下载</el-button>
