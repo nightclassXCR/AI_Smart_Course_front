@@ -40,11 +40,11 @@
           <el-input v-model="uploadForm.name" placeholder="请输入资源名称" />
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="uploadForm.type" placeholder="请选择类型">
-            <el-option label="文档" value="文档" />
-            <el-option label="图片" value="图片" />
-            <el-option label="视频" value="视频" />
-            <el-option label="其他" value="其他" />
+          <el-select v-model="uploadForm.fileType" placeholder="请选择类型">
+            <el-option label="文档" value="pdf" />
+            <el-option label="图片" value="image" />
+            <el-option label="视频" value="video" />
+            <el-option label="其他" value="doc" />
           </el-select>
         </el-form-item>
         <el-form-item label="文件">
@@ -77,7 +77,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 
 const resourceList = ref([]);
 const showUpload = ref(false);
-const uploadForm = ref({ name: '', type: '', file: null });
+const uploadForm = ref({ name: '', fileType: '', fileUrl: null });
 const uploadRef = ref(null);
 const loading = ref(false);
 
@@ -96,12 +96,12 @@ const fetchResources = async () => {
 onMounted(fetchResources);
 
 function handleFileChange(file) {
-  uploadForm.value.file = file.raw;
+  uploadForm.value.fileUrl = file.raw;
 }
 
 function closeUploadDialog() {
   showUpload.value = false;
-  uploadForm.value = { name: '', type: '', file: null };
+  uploadForm.value = { name: '', fileType: '', fileUrl: null };
   if (uploadRef.value && uploadRef.value.clearFiles) {
     uploadRef.value.clearFiles();
   }
@@ -112,11 +112,11 @@ async function submitUpload() {
     ElMessage.error('请输入资源名称');
     return;
   }
-  if (!uploadForm.value.type) {
+  if (!uploadForm.value.fileType) {
     ElMessage.error('请选择资源类型');
     return;
   }
-  if (!uploadForm.value.file) {
+  if (!uploadForm.value.fileUrl) {
     ElMessage.error('请选择要上传的文件');
     return;
   }
@@ -124,8 +124,8 @@ async function submitUpload() {
   try {
     const formData = new FormData();
     formData.append('name', uploadForm.value.name);
-    formData.append('type', uploadForm.value.type);
-    formData.append('file', uploadForm.value.file);
+    formData.append('type', uploadForm.value.fileType);
+    formData.append('file', uploadForm.value.fileUrl);
     await createResource(formData);
     ElMessage.success('资源上传成功！');
     closeUploadDialog();

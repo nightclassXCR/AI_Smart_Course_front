@@ -13,7 +13,7 @@
     <el-card class="table-card">
       <el-table :data="homeworkList" style="width: 100%; margin-top: 10px; border-radius: 10px;" :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}">
         <el-table-column prop="title" label="作业标题" />
-        <el-table-column prop="course" label="所属课程" />
+        <el-table-column prop="courseId" label="所属课程" />
         <el-table-column prop="deadline" label="截止日期" />
         <el-table-column label="操作">
           <template #default="scope">
@@ -35,7 +35,7 @@
           <el-input v-model="form.title" />
         </el-form-item>
         <el-form-item label="所属课程">
-          <el-input v-model="form.course" />
+          <el-input v-model="form.courseId" />
         </el-form-item>
         <el-form-item label="截止日期">
           <el-input v-model="form.deadline" />
@@ -73,7 +73,7 @@ import { getHomeworkList, createHomework, updateHomework, deleteHomework } from 
 import { ElMessage } from 'element-plus';
 const homeworkList = ref([]);
 const showAdd = ref(false);
-const form = ref({ title: '', course: '', deadline: '', questions: [] });
+const form = ref({ title: '', courseId: '', deadline: '', questions: [] });
 const editId = ref(null);
 const showQuestionDialog = ref(false);
 const loading = ref(false);

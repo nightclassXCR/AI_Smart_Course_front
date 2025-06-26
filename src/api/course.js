@@ -6,7 +6,9 @@ import request from './request'
 export function getCourseList(teacherId) {
   return request({
     url: `/courses/byTeacher/${teacherId}`,
-    method: 'get'
+    method: 'get',
+    params
+
   });
 }
 
