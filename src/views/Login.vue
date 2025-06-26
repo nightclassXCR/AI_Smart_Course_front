@@ -11,11 +11,11 @@
         
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
-            <label>用户名/邮箱</label>
+            <label>手机号/邮箱</label>
             <input 
               type="text" 
               v-model="loginForm.username"
-              placeholder="请输入用户名或邮箱"
+              placeholder="请输入电话号或邮箱"
               required
             />
           </div>
@@ -46,11 +46,6 @@
             还没有账号？ <a href="#" @click="showRegister = true">立即注册</a>
           </div>
         </form>
-        
-        <div class="preview-btns">
-          <button class="preview-btn" @click="preview('student')">学生端预览</button>
-          <button class="preview-btn" @click="preview('teacher')">教师端预览</button>
-        </div>
         
         <div v-if="error" class="error-message">
           {{ error }}
@@ -386,31 +381,6 @@
     background: #667eea;
     color: white;
     border-color: #667eea;
-  }
-  
-  .preview-btns {
-    display: flex;
-    gap: 16px;
-    margin: 18px 0 0 0;
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .preview-btn {
-    flex: 1;
-    background: #f5f7fa;
-    color: #409EFF;
-    border: 1px solid #dbeafe;
-    border-radius: 6px;
-    padding: 8px 0;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  
-  .preview-btn:hover {
-    background: #e0e7ff;
-    color: #1d4ed8;
   }
   
   @media (max-width: 600px) {
