@@ -20,7 +20,7 @@
           <div v-for="rec in recommendList" :key="rec.id" class="overview-item" @click="router.push(`/student/course/${rec.id}`)">
             <div class="overview-title">{{ rec.name }}</div>
             <div class="overview-meta">{{ rec.teacher }} | {{ rec.progress }}% 进度</div>
-            <el-progress :percentage="rec.progress" :stroke-width="8" />
+            <!-- <el-progress :percentage="rec.progress" :stroke-width="8" /> -->
           </div>
         </div>
         <div v-else class="empty-module">暂无推荐</div>
@@ -33,7 +33,7 @@
           <div v-for="course in allCourses" :key="course.id" class="overview-item">
             <div class="overview-title" @click="router.push(`/student/courseIntro/${course.id}`)" style="cursor:pointer; color:#409EFF;">{{ course.name }}</div>
             <div class="overview-meta">{{ course.teacher }} | {{ course.progress }}% 进度</div>
-            <el-progress :percentage="course.progress" :stroke-width="8" />
+            <!-- <el-progress :percentage="course.progress" :stroke-width="8" /> -->
             <el-button type="primary" size="small" @click="enrollCourseHandler(course.id)">选课</el-button>
           </div>
         </div>
@@ -102,7 +102,7 @@
           <div v-for="course in courses.slice(0,2)" :key="course.id" class="module-item">
             <div class="item-title">{{ course.name }}</div>
             <div class="item-meta">{{ course.teacher }} | {{ course.progress }}% 进度</div>
-            <el-progress :percentage="course.progress" :stroke-width="10" />
+            <!-- <el-progress :percentage="course.progress" :stroke-width="10" /> -->
           </div>
         </div>
         <div v-else class="empty-module">暂无课程</div>

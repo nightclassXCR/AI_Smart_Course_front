@@ -33,7 +33,7 @@
           <span>授课教师：{{ course.teacher }}</span>
         </div>
         <div class="course-progress">
-          <el-progress :percentage="course.progress" :stroke-width="16" />
+          <!-- <el-progress :percentage="course.progress" :stroke-width="16" /> -->
         </div>
         <div class="course-actions">
           <el-button size="small" @click="viewDetail(course)">详情</el-button>
@@ -196,14 +196,21 @@ function getEmptyMessage() {
 }
 .course-card {
   background: #f8fafc;
-  border-radius: 10px;
+  border-radius: 14px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 18px 20px 14px 20px;
-  width: 260px;
+  padding: 22px 24px 18px 24px;
+  width: 270px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   position: relative;
+  border: 2px solid #e3eefe;
+  transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
+}
+.course-card:hover {
+  box-shadow: 0 4px 18px rgba(64,158,255,0.13);
+  border: 2px solid #409EFF;
+  transform: translateY(-2px) scale(1.025);
 }
 .course-header {
   display: flex;
@@ -212,34 +219,49 @@ function getEmptyMessage() {
   margin-bottom: 2px;
 }
 .course-title {
-  font-weight: bold;
-  font-size: 17px;
-}
-.course-status {
-  font-size: 13px;
-  padding: 2px 10px;
-  border-radius: 12px;
-  color: #fff;
-  background: #67c23a;
-}
-.course-status.ongoing {
-  background: #409EFF;
-}
-.course-status.finished {
-  background: #67c23a;
+  font-weight: 700;
+  font-size: 20px;
+  color: #222;
+  letter-spacing: 0.5px;
 }
 .course-meta {
-  color: #888;
-  font-size: 14px;
-  margin-bottom: 2px;
+  color: #409EFF;
+  font-size: 15px;
+  margin-bottom: 6px;
 }
 .course-progress {
   margin-bottom: 4px;
 }
 .course-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 12px;
+  margin-top: 8px;
+}
+.course-actions .el-button {
+  border-radius: 18px;
+  font-size: 14px;
+  padding: 4px 18px;
+  transition: background 0.2s, color 0.2s;
+}
+.course-actions .el-button:hover {
+  background: #409EFF;
+  color: #fff;
+  border-color: #409EFF;
+}
+.course-status {
+  font-size: 13px;
+  padding: 2px 14px;
+  border-radius: 14px;
+  color: #fff;
+  background: #67c23a;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+.course-status.ongoing {
+  background: #409EFF;
+}
+.course-status.finished {
+  background: #67c23a;
 }
 .empty-state {
   width: 100%;

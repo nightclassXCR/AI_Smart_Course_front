@@ -17,10 +17,10 @@
       <div class="info-row"><span>当前章节：</span>{{ course.chapter }}</div>
       <div class="info-row"><span>总课时：</span>{{ course.totalChapters }}</div>
       <div class="info-row"><span>上次学习：</span>{{ course.lastUpdate }}</div>
-      <div class="info-row">
+      <!-- <div class="info-row">
         <span>学习进度：</span>
         <el-progress :percentage="course.progress" :stroke-width="16" style="width: 200px; display: inline-block;" />
-      </div>
+      </div> -->
     </div>
     <!-- 章节与概念区 -->
     <div class="chapter-section">

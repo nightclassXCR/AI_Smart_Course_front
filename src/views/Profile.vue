@@ -2,7 +2,7 @@
   <div class="profile-container">
     <!-- 顶部头像昵称区 -->
     <div class="profile-header">
-      <el-avatar :size="72" :src="user.avatar || defaultAvatar" />
+      <!-- <el-avatar :size="72" :src="user.avatar || defaultAvatar" /> -->
       <div class="profile-info">
         <div class="profile-name">{{ user.name || '用户' }}</div>
         <div class="profile-id">ID：{{ user.id || '未登录' }}</div>
@@ -54,6 +54,10 @@ const editForm = ref({ name: '', email: '', phoneNumber: '' });
 onMounted(() => {
   try {
     const u = JSON.parse(localStorage.getItem('user'));
+    // 兼容后端未映射phoneNumber的情况
+    if (u && !u.phoneNumber && u.phone_number) {
+      u.phoneNumber = u.phone_number;
+    }
     user.value = u || {};
   } catch {
     user.value = {};

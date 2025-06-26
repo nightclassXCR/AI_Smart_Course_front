@@ -55,7 +55,7 @@
         <div v-for="course in courses" :key="course.id" class="course-item">
           <div class="item-title">{{ course.name }}</div>
           <div class="item-meta">{{ course.students }}名学生 | 平均分{{ course.averageScore }} | 进度{{ course.progress }}%</div>
-          <el-progress :percentage="course.progress" :stroke-width="10" />
+          <!-- <el-progress :percentage="course.progress" :stroke-width="10" /> -->
           <div class="item-actions">
             <el-button size="small" @click="viewDetail(course)">详情</el-button>
             <el-button size="small" type="primary" @click="editCourse(course)">编辑</el-button>

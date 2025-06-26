@@ -10,35 +10,77 @@
     </div>
     <!-- 基本信息卡片 -->
     <div class="info-card">
-      <div class="info-row"><span>院系：</span>{{ teacher.department || '计算机学院' }}</div>
-      <div class="info-row"><span>联系方式：</span>{{ teacher.phone || '未填写' }}</div>
+      <!-- <div class="info-row"><span>院系：</span>{{ teacher.department || '计算机学院' }}</div> -->
+      <div class="info-row"><span>联系方式：</span>{{ teacher.phoneNumber || '未填写' }}</div>
       <div class="info-row"><span>邮箱：</span>{{ teacher.email || '未填写' }}</div>
     </div>
     <!-- 操作按钮区 -->
     <div class="profile-actions">
-      <el-button type="primary" @click="editProfile">修改资料</el-button>
+      <el-button type="primary" @click="openEdit">修改资料</el-button>
       <el-button type="danger" @click="logout">退出登录</el-button>
     </div>
+    <!-- 修改资料弹窗 -->
+    <el-dialog v-model="showEdit" title="修改资料" width="400px">
+      <el-form :model="editForm" label-width="80px">
+        <el-form-item label="姓名">
+          <el-input v-model="editForm.name" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="editForm.email" />
+        </el-form-item>
+        <el-form-item label="联系方式">
+          <el-input v-model="editForm.phoneNumber" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEdit = false">取消</el-button>
+        <el-button type="primary" @click="saveEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 const router = useRouter();
 const defaultAvatar = 'https://img1.baidu.com/it/u=1618884812,3704489962&fm=253&fmt=auto&app=138&f=JPEG?w=200&h=200';
-const teacher = ref({
-  name: '李教授',
-  id: 'T20240001',
-  avatar: '',
-  department: '计算机学院',
-  phone: '',
-  email: ''
+const teacher = ref({});
+const showEdit = ref(false);
+const editForm = ref({ name: '', email: '', phoneNumber: '' });
+
+onMounted(() => {
+  try {
+    const u = JSON.parse(localStorage.getItem('user'));
+    // 兼容 phoneNumber 字段
+    if (u && !u.phoneNumber && u.phone_number) {
+      u.phoneNumber = u.phone_number;
+    }
+    teacher.value = u || {};
+  } catch {
+    teacher.value = {};
+  }
 });
-function editProfile() {
-  // 实际应弹窗或跳转到资料编辑页
-  alert('资料编辑功能开发中');
+
+function openEdit() {
+  editForm.value = {
+    name: teacher.value.name || '',
+    email: teacher.value.email || '',
+    phoneNumber: teacher.value.phoneNumber || ''
+  };
+  showEdit.value = true;
 }
+
+function saveEdit() {
+  teacher.value.name = editForm.value.name;
+  teacher.value.email = editForm.value.email;
+  teacher.value.phoneNumber = editForm.value.phoneNumber;
+  localStorage.setItem('user', JSON.stringify(teacher.value));
+  showEdit.value = false;
+  ElMessage.success('资料已更新');
+}
+
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
