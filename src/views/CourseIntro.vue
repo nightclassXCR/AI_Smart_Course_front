@@ -6,13 +6,13 @@
         <div class="logo">📚</div>
         <div>
           <h1>{{ course.name }}</h1>
-          <p class="subtitle">授课教师：{{ course.teacher }}</p>
+          <p class="subtitle">授课教师：{{ course.teacherName || course.teacher}}</p>
         </div>
       </div>
       <el-button type="primary" @click="enrollCourseHandler">选课</el-button>
     </div>
     <el-card class="info-card">
-      <div class="info-row"><span>课程简介：</span>{{ course.desc }}</div>
+      <div class="info-row"><span>课程简介：</span>{{ course.description }}</div>
     </el-card>
     <div class="chapter-section">
       <div class="chapter-title">课程章节与知识点</div>
@@ -33,7 +33,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { getCourseIntro, enrollCourse } from '@/api/course';
+import { getCourseDetail, enrollCourse, getCourseChapters } from '@/api/course';
 import { ElMessage } from 'element-plus';
 
 const route = useRoute();
@@ -41,11 +41,13 @@ const courseId = route.params.id;
 const course = ref({ name: '', teacher: '', desc: '' });
 const chapters = ref([]);
 
-async function fetchCourseIntro() {
+async function fetchCourseDetail() {
   try {
-    const res = await getCourseIntro(courseId);
-    course.value = res.data.course || {};
-    chapters.value = res.data.chapters || [];
+    const res = await getCourseDetail(courseId);
+    course.value = res.data || {};
+    // 获取章节
+    const chapterRes = await getCourseChapters(courseId);
+    chapters.value = chapterRes.data || [];
   } catch (e) {
     ElMessage.error('获取课程信息失败');
   }
@@ -55,13 +57,13 @@ async function enrollCourseHandler() {
   try {
     await enrollCourse(courseId);
     ElMessage.success('选课成功');
-    fetchCourseIntro(); // 选课后可刷新数据
+    fetchCourseDetail(); // 选课后可刷新数据
   } catch (e) {
     ElMessage.error('选课失败');
   }
 }
 
-onMounted(fetchCourseIntro);
+onMounted(fetchCourseDetail);
 </script>
 
 <style scoped>

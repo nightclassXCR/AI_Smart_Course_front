@@ -6,36 +6,32 @@
       <div class="header-title">
         <div class="logo">📖</div>
         <div>
-          <h1>{{ course.name }}</h1>
-          <p class="subtitle">授课教师：{{ course.teacher }} | 进度：{{ course.progress }}%</p>
+          <h1>{{ course.name || '课程名称' }}</h1>
+          <p class="subtitle">授课教师：{{ course.teacherName || course.teacher || '未知' }}</p>
         </div>
+        <el-button v-if="!course.selected" type="primary" @click="enrollCourseHandler">选课</el-button>
       </div>
     </div>
-    <!-- 课程信息卡片 -->
+    <!-- 课程简介卡片 -->
     <div class="info-card">
-      <div class="info-row"><span>课程简介：</span>{{ course.desc }}</div>
-      <div class="info-row"><span>当前章节：</span>{{ course.chapter }}</div>
-      <div class="info-row"><span>总课时：</span>{{ course.totalChapters }}</div>
-      <div class="info-row"><span>上次学习：</span>{{ course.lastUpdate }}</div>
-      <!-- <div class="info-row">
-        <span>学习进度：</span>
-        <el-progress :percentage="course.progress" :stroke-width="16" style="width: 200px; display: inline-block;" />
-      </div> -->
+      <div class="info-row"><span>课程简介：</span>{{ course.desc || course.description || '暂无简介' }}</div>
     </div>
-    <!-- 章节与概念区 -->
+    <!-- 章节与知识点区 -->
     <div class="chapter-section">
       <div class="chapter-title">课程章节与知识点</div>
-      <div v-for="chapter in chapters" :key="chapter.id" class="chapter-card">
-        <div class="chapter-header">
-          <span class="chapter-name">{{ chapter.name }}</span>
-          <span class="chapter-progress">进度：{{ chapter.progress }}%</span>
-        </div>
-        <div class="concept-list">
-          <div v-for="concept in chapter.concepts" :key="concept" class="concept-item">
-            <i class="el-icon-collection"></i> {{ concept }}
+      <div v-if="chapters.length">
+        <div v-for="chapter in chapters" :key="chapter.id" class="chapter-card">
+          <div class="chapter-header">
+            <span class="chapter-name">{{ chapter.name }}</span>
+          </div>
+          <div class="concept-list">
+            <span v-for="concept in groupedConcepts[chapter.id] || []" :key="concept.id" class="concept-item">
+              <i class="el-icon-collection"></i> {{ concept.name }}
+            </span>
           </div>
         </div>
       </div>
+      <div v-else class="empty-state">暂无章节</div>
     </div>
     <!-- 智能问答区 -->
     <div class="qa-card">
@@ -63,24 +59,38 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { getCourseDetail } from '@/api/course';
+import { getCourseDetail, getCourseChapters, enrollCourse, getGroupedConcepts } from '@/api/course';
 import { ElMessage } from 'element-plus';
 
 const route = useRoute();
 const courseId = route.params.id;
 const course = ref({});
 const chapters = ref([]);
+const groupedConcepts = ref({});
 
 async function fetchCourseDetail() {
   try {
+    // 获取课程详情
     const res = await getCourseDetail(courseId);
-    // 假设API返回结构为 { data: { course: {...}, chapters: [...] } }
-    if (res.data) {
-      course.value = res.data.course || {};
-      chapters.value = res.data.chapters || [];
-    }
+    course.value = res.data || {};
+    // 获取章节
+    const chapterRes = await getCourseChapters(courseId);
+    chapters.value = chapterRes.data || [];
+    // 获取按章节分组的知识点
+    const conceptRes = await getGroupedConcepts(courseId);
+    groupedConcepts.value = conceptRes.data || {};
   } catch (e) {
     ElMessage.error('获取课程详情失败');
+  }
+}
+
+async function enrollCourseHandler() {
+  try {
+    await enrollCourse(course.value.id);
+    ElMessage.success('选课成功');
+    fetchCourseDetail();
+  } catch (e) {
+    ElMessage.error('选课失败');
   }
 }
 

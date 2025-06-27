@@ -19,7 +19,8 @@
         <div v-if="recommendList && recommendList.length" class="overview-list">
           <div v-for="rec in recommendList" :key="rec.id" class="overview-item" @click="router.push(`/student/course/${rec.id}`)">
             <div class="overview-title">{{ rec.name }}</div>
-            <div class="overview-meta">{{ rec.teacher }} | {{ rec.progress }}% 进度</div>
+            <div class="overview-meta">教师：{{ rec.teacherName }}</div>
+            <div class="overview-meta">课程简介：{{ rec.description}}</div>
             <!-- <el-progress :percentage="rec.progress" :stroke-width="8" /> -->
           </div>
         </div>
@@ -32,7 +33,8 @@
         <div v-if="allCourses && allCourses.length" class="overview-list">
           <div v-for="course in allCourses" :key="course.id" class="overview-item">
             <div class="overview-title" @click="router.push(`/student/courseIntro/${course.id}`)" style="cursor:pointer; color:#409EFF;">{{ course.name }}</div>
-            <div class="overview-meta">{{ course.teacher }} | {{ course.progress }}% 进度</div>
+            <div class="overview-meta">教师：{{ course.teacherName }}</div>
+            <div class="overview-meta">课程简介：{{ course.description }}</div>
             <!-- <el-progress :percentage="course.progress" :stroke-width="8" /> -->
             <el-button type="primary" size="small" @click="enrollCourseHandler(course.id)">选课</el-button>
           </div>
