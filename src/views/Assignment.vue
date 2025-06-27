@@ -333,20 +333,29 @@
   
   .assignment-list {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 20px;
+    min-height: 180px;
   }
   
   .assignment-card {
-    background: white;
-    border-radius: 8px;
-    padding: 24px;
-    border: 1px solid #ebeef5;
-    transition: all 0.3s;
+    background: #f8fafc;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    padding: 22px 24px 18px 24px;
+    width: 270px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    border: 2px solid #e3eefe;
+    transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
   }
   
   .assignment-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 18px rgba(64,158,255,0.13);
+    border: 2px solid #409EFF;
+    transform: translateY(-2px) scale(1.025);
   }
   
   .assignment-header {
@@ -497,5 +506,12 @@
   .empty-state p {
     color: #909399;
     margin: 0;
+  }
+  
+  @media (max-width: 900px) {
+    .assignment-card {
+      width: 100%;
+      min-width: 0;
+    }
   }
   </style>

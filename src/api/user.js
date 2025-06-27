@@ -6,4 +6,14 @@ export function updateUser(data) {
     method: 'post',
     data
   });
-} 
+}
+
+// 用户注册
+export function register(data) {
+  return request({
+    url: '/auth/register',
+    method: 'post',
+    data
+  });
+}
+

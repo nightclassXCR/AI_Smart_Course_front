@@ -66,6 +66,10 @@
               <input type="email" v-model="registerForm.email" required>
             </div>
             <div class="form-group">
+              <label>手机号</label>
+              <input type="text" v-model="registerForm.phoneNumber" required>
+            </div>
+            <div class="form-group">
               <label>姓名</label>
               <input type="text" v-model="registerForm.name" required>
             </div>
@@ -98,6 +102,7 @@
   import { ref, reactive } from 'vue'
   import { useRouter } from 'vue-router'
   import { loginByEmail, loginByPhoneNumber } from '@/api/login'
+  import { register } from '@/api/user'
   import axios from 'axios'
 
   const router = useRouter()
@@ -111,6 +116,7 @@
   const registerForm = reactive({
     username: '',
     email: '',
+    phoneNumber: '',
     name: '',
     role: 'student',
     password: '',
@@ -141,16 +147,18 @@
         loading.value = false
         return
       }
-      if (!response.token || !response.user) {
+      console.log('登录返回：', response)
+      const data = response.data || response
+      if (!data.token || !data.user) {
         error.value = '登录失败，返回数据异常'
         loading.value = false
         return
       }
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(response.user))
-      if (response.user.role === 'ROLE_STUDENT') {
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      if (data.user.role === 'ROLE_STUDENT') {
         router.push('/student')
-      } else if (response.user.role === 'ROLE_TEACHER') {
+      } else if (data.user.role === 'ROLE_TEACHER') {
         router.push('/teacher')
       } else {
         router.push('/')
@@ -167,9 +175,10 @@
       return
     }
     try {
-      await axios.post('/api/auth/register', {
+      await register({
         username: registerForm.username,
         email: registerForm.email,
+        phoneNumber: registerForm.phoneNumber,
         name: registerForm.name,
         role: registerForm.role,
         password: registerForm.password
@@ -178,6 +187,7 @@
       Object.assign(registerForm, {
         username: '',
         email: '',
+        phoneNumber: '',
         name: '',
         role: 'student',
         password: '',
@@ -191,6 +201,9 @@
     localStorage.setItem('user', JSON.stringify({ role, guest: true }))
     router.push(`/${role}`)
   }
+
+  const userInfo = ref({ name: '薛聪睿' })
+  console.log('userInfo:', userInfo.value)
   </script>
   
   <style scoped>

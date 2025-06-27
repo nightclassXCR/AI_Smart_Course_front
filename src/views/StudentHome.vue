@@ -5,7 +5,7 @@
       <div class="header-title">
         <div class="logo">👋</div>
         <div>
-          <h1>欢迎回来，{{ userInfo.name || '同学' }}！</h1>
+          <h1>你好{{ props.userInfo.name || '' }}同学</h1>
           <p class="subtitle">继续你的学习之旅，今天也要加油！</p>
         </div>
       </div>
@@ -141,25 +141,27 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAllCourses, enrollCourse } from '@/api/course'
+import { getAllCourses, enrollCourse, getNotMyCourse } from '@/api/course'
 import { ElMessage } from 'element-plus'
 import { useAttrs } from 'vue'
 
 const router = useRouter()
 const attrs = useAttrs()
 
-// 接收父组件传递的props
-const userInfo = ref(attrs.userInfo || {})
-const stats = ref(attrs.stats || {})
-const courses = ref(attrs.courses || [])
-const assignments = ref(attrs.assignments || [])
-const recentActivities = ref(attrs.recentActivities || [])
+const props = defineProps(['userInfo', 'stats', 'courses', 'assignments', 'recentActivities', 'allCourses'])
+
+const userInfo = ref(props.userInfo || {})
+const stats = ref(props.stats || {})
+const courses = ref(props.courses || [])
+const assignments = ref(props.assignments || [])
+const recentActivities = ref(props.recentActivities || [])
 const allCourses = ref([])
 const recommendList = ref([])
 
+
 async function fetchAllCourses() {
   try {
-    const res = await getAllCourses()
+    const res = await getNotMyCourse()
     allCourses.value = res.data?.list || res.data || []
     recommendList.value = allCourses.value.slice(0, 3)
   } catch (e) {

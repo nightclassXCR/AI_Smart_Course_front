@@ -49,7 +49,7 @@ export function getCourseDetail(courseId) {
 // 获取全部课程列表
 export function getAllCourses() {
   return request({
-    url: '/api/courses',
+    url: '/courses',
     method: 'get'
   });
 }
@@ -57,7 +57,7 @@ export function getAllCourses() {
 // 学生选课
 export function enrollCourse(courseId) {
   return request({
-    url: `/api/courses/${courseId}/enroll`,
+    url: `/courses/${courseId}/enroll`,
     method: 'post'
   });
 }
@@ -65,7 +65,7 @@ export function enrollCourse(courseId) {
 // 获取课程详情（介绍页）
 export function getCourseIntro(courseId) {
   return request({
-    url: `/api/courses/${courseId}/intro`,
+    url: `/courses/${courseId}/intro`,
     method: 'get'
   });
 }
@@ -94,5 +94,12 @@ export function searchMyCourses(keyword) {
     params: {
       keyword
     }
+  });
+}
+// 查询我没选的课程
+export function getNotMyCourse(){
+  return request({
+    url:'/courses/NotMyCourses',
+    method:'get'
   });
 }

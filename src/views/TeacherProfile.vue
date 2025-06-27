@@ -44,6 +44,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { updateUser } from '@/api/user'
 const router = useRouter();
 const defaultAvatar = 'https://img1.baidu.com/it/u=1618884812,3704489962&fm=253&fmt=auto&app=138&f=JPEG?w=200&h=200';
 const teacher = ref({});
@@ -72,13 +73,24 @@ function openEdit() {
   showEdit.value = true;
 }
 
-function saveEdit() {
-  teacher.value.name = editForm.value.name;
-  teacher.value.email = editForm.value.email;
-  teacher.value.phoneNumber = editForm.value.phoneNumber;
-  localStorage.setItem('user', JSON.stringify(teacher.value));
-  showEdit.value = false;
-  ElMessage.success('资料已更新');
+async function saveEdit() {
+  try {
+    await updateUser({
+      id: teacher.value.id,
+      name: editForm.value.name,
+      email: editForm.value.email,
+      phoneNumber: editForm.value.phoneNumber
+    });
+    // 更新本地
+    teacher.value.name = editForm.value.name;
+    teacher.value.email = editForm.value.email;
+    teacher.value.phoneNumber = editForm.value.phoneNumber;
+    localStorage.setItem('user', JSON.stringify(teacher.value));
+    showEdit.value = false;
+    ElMessage.success('资料已更新');
+  } catch (e) {
+    ElMessage.error('资料更新失败');
+  }
 }
 
 function logout() {

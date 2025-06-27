@@ -29,12 +29,14 @@
       <router-view v-slot="{ Component }">
         <component
           :is="Component"
-          :userInfo="userInfo"
-          :stats="stats"
-          :courses="courses"
-          :assignments="assignments"
-          :recentActivities="recentActivities"
-          :allCourses="courses"
+          v-bind="{
+            userInfo,
+            stats,
+            courses,
+            assignments,
+            recentActivities,
+            allCourses: courses
+          }"
         />
       </router-view>
     </main>
