@@ -53,8 +53,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getMyCourses, quitCourse, searchMyCourses } from '@/api/course';
-import { ElMessage } from 'element-plus';
+import { getMyCourses, unenrollCourse, searchMyCourses } from '@/api/course';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const courseList = ref([]);
 const search = ref('');
@@ -109,11 +109,23 @@ function viewDetail(row) {
 }
 async function quitCourseHandler(id) {
   try {
-    await quitCourse(id);
-    ElMessage.success('退课成功');
-    fetchCourses();
+    await ElMessageBox.confirm(
+      '确定要退选该课程吗？',
+      '退课确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+    await unenrollCourse(id)
+    ElMessage.success('退课成功')
+    fetchCourses()
   } catch (e) {
-    ElMessage.error('退课失败');
+    if (e !== 'cancel') {
+      ElMessage.error('退课失败')
+    }
+    // 用户取消时不提示错误
   }
 }
 function getEmptyMessage() {

@@ -38,7 +38,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { getCourseDetail, enrollCourse, getCourseChapters } from '@/api/course';
+import { getCourseDetail, enrollCourse, getCourseChapters, unenrollCourse } from '@/api/course';
 import { ElMessage } from 'element-plus';
 
 const route = useRoute();

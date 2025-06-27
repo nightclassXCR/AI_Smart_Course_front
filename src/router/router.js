@@ -114,6 +114,11 @@ const routes = [
         path: 'courseIntro/:id',
         name: 'CourseIntro',
         component: () => import('@/views/CourseIntro.vue')
+      },
+      {
+        path: 'chapter/:id',
+        name: 'ChapterDetail',
+        component: () => import('@/views/ChapterDetail.vue')
       }
     ]
   },

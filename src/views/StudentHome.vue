@@ -143,7 +143,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAllCourses, enrollCourse, getNotMyCourse } from '@/api/course'
+import { getAllCourses, enrollCourse, getNotMyCourse, getMyCourses } from '@/api/course'
 import { ElMessage } from 'element-plus'
 import { useAttrs } from 'vue'
 
@@ -154,7 +154,7 @@ const props = defineProps(['userInfo', 'stats', 'courses', 'assignments', 'recen
 
 const userInfo = ref(props.userInfo || {})
 const stats = ref(props.stats || {})
-const courses = ref(props.courses || [])
+const courses = ref([])
 const assignments = ref(props.assignments || [])
 const recentActivities = ref(props.recentActivities || [])
 const allCourses = ref([])
@@ -173,15 +173,26 @@ async function fetchAllCourses() {
 
 async function enrollCourseHandler(courseId) {
   try {
-    await enrollCourse(courseId)
-    ElMessage.success('选课成功')
-    fetchAllCourses()
+    const user = JSON.parse(localStorage.getItem('user')) || {};
+    await enrollCourse(courseId, user.id);
+    ElMessage.success('选课成功');
+    fetchAllCourses();
   } catch (e) {
-    ElMessage.error('选课失败')
+    ElMessage.error('选课失败');
   }
 }
 
-onMounted(fetchAllCourses)
+onMounted(async () => {
+  // 获取我的课程
+  try {
+    const res = await getMyCourses()
+    courses.value = (res.data?.list || res.data || []).slice(0, 2)
+  } catch (e) {
+    ElMessage.error('获取我的课程失败')
+  }
+  // 其他初始化逻辑
+  fetchAllCourses()
+})
 </script>
 
 <style scoped>
