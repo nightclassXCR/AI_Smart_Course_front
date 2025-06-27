@@ -18,11 +18,16 @@
       <div class="chapter-title">课程章节与知识点</div>
       <div v-for="chapter in chapters" :key="chapter.id" class="chapter-card">
         <div class="chapter-header">
-          <span class="chapter-name">{{ chapter.name }}</span>
+          <span class="chapter-name">{{ chapter.title }}</span>
         </div>
         <div class="concept-list">
-          <span v-for="concept in chapter.concepts" :key="concept" class="concept-item">
-            <i class="el-icon-collection"></i> {{ concept }}
+          <span
+            v-for="concept in groupedConcepts[chapter.id] || []"
+            :key="concept.id"
+            class="concept-item"
+          >
+            <i class="el-icon-collection"></i> {{ concept.name }}<br>
+            <small style="color:#888">{{ concept.description }}</small>
           </span>
         </div>
       </div>
@@ -40,6 +45,7 @@ const route = useRoute();
 const courseId = route.params.id;
 const course = ref({ name: '', teacher: '', desc: '' });
 const chapters = ref([]);
+const groupedConcepts = ref({});
 
 async function fetchCourseDetail() {
   try {
@@ -48,6 +54,9 @@ async function fetchCourseDetail() {
     // 获取章节
     const chapterRes = await getCourseChapters(courseId);
     chapters.value = chapterRes.data || [];
+    // 获取按章节分组的知识点
+    const groupedConceptsRes = await getGroupedConcepts(courseId);
+    groupedConcepts.value = groupedConceptsRes.data || {};
   } catch (e) {
     ElMessage.error('获取课程信息失败');
   }

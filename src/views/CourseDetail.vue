@@ -79,6 +79,9 @@ async function fetchCourseDetail() {
     // 获取按章节分组的知识点
     const conceptRes = await getGroupedConcepts(courseId);
     groupedConcepts.value = conceptRes.data || {};
+    // 调试打印
+    console.log('groupedConcepts:', groupedConcepts.value);
+    console.log('chapters:', chapters.value);
   } catch (e) {
     ElMessage.error('获取课程详情失败');
   }
