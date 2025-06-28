@@ -8,153 +8,50 @@
           <p>管理你的作业任务，按时完成学习目标</p>
         </div>
   
-        <!-- 作业过滤标签 -->
-        <div class="filter-tabs">
-          <button 
-            :class="['tab', { active: activeTab === 'pending' }]"
-            @click="setActiveTab('pending')"
-          >
-            待完成作业
-          </button>
-          <button 
-            :class="['tab', { active: activeTab === 'submitted' }]"
-            @click="setActiveTab('submitted')"
-          >
-            已提交作业
-          </button>
-          <button 
-            :class="['tab', { active: activeTab === 'graded' }]"
-            @click="setActiveTab('graded')"
-          >
-            已批改作业
-          </button>
-        </div>
-  
         <!-- 作业列表 -->
         <div class="assignment-list">
           <div 
-            v-for="assignment in filteredAssignments" 
-            :key="assignment.id"
+            v-for="assignment in assignments" 
+            :key="assignment.title"
             class="assignment-card"
+            @click="goToAssignment(assignment.id)"
+            style="cursor:pointer"
           >
             <div class="assignment-header">
-              <h3 class="assignment-title">{{ assignment.title }}</h3>
-              <div class="assignment-status">
-                <span 
-                  v-if="assignment.status === 'pending'"
-                  class="status-badge urgent"
-                >
-                  {{ assignment.priority }}
-                </span>
-                <span 
-                  v-else-if="assignment.status === 'submitted'"
-                  class="status-badge submitted"
-                >
-                  已提交
-                </span>
-                <span 
-                  v-else-if="assignment.status === 'graded'"
-                  class="status-badge graded"
-                >
-                  已批改
-                </span>
-              </div>
+              <h2 class="course-name">{{ assignment.courseName }}</h2>
             </div>
-  
             <div class="assignment-meta">
               <div class="meta-item">
-                <span class="meta-icon">📖</span>
-                <span>{{ assignment.course_name }}</span>
+                <span class="meta-icon">📝</span>
+                <span>{{ assignment.title }}</span>
               </div>
               <div class="meta-item">
                 <span class="meta-icon">📅</span>
-                <span>{{ formatDate(assignment.deadline) }}</span>
+                <span>{{ assignment.deadline ? assignment.deadline : '暂无截止时间' }}</span>
               </div>
-              <div class="meta-item">
-                <span class="meta-icon">⏰</span>
-                <span>预计 {{ assignment.estimated_time }}分钟</span>
-              </div>
-              <div class="meta-item">
-                <span class="meta-icon">⭐</span>
-                <span>{{ assignment.max_score }} 分</span>
-              </div>
-            </div>
-  
-            <div class="assignment-description">
-              {{ assignment.description }}
-            </div>
-  
-            <!-- 已批改作业显示成绩 -->
-            <div v-if="assignment.status === 'graded'" class="score-info">
-              <div class="score-display">
-                <span class="score">{{ assignment.final_score }}</span>
-                <span class="total">/ {{ assignment.max_score }}</span>
-              </div>
-              <div v-if="assignment.comment" class="teacher-comment">
-                <strong>老师评语：</strong>{{ assignment.comment }}
-              </div>
-            </div>
-  
-            <div class="assignment-actions">
-              <button 
-                v-if="assignment.status === 'pending'"
-                class="btn btn-primary"
-                @click="startAssignment(assignment.id)"
-              >
-                开始作业
-              </button>
-              <button 
-                v-else-if="assignment.status === 'submitted'"
-                class="btn btn-secondary"
-                disabled
-              >
-                等待批改
-              </button>
-              <button 
-                v-else-if="assignment.status === 'graded'"
-                class="btn btn-outline"
-                @click="viewAssignment(assignment.id)"
-              >
-                查看详情
-              </button>
             </div>
           </div>
         </div>
   
         <!-- 空状态 -->
-        <div v-if="filteredAssignments.length === 0" class="empty-state">
+        <div v-if="assignments.length === 0" class="empty-state">
           <div class="empty-icon">📝</div>
           <h3>暂无作业</h3>
-          <p>当前没有{{ getEmptyMessage() }}作业</p>
+          <p>当前没有作业</p>
         </div>
       </div>
     </div>
   </template>
   
   <script>
-  import { getMyAssignments } from '@/api/homework';
+  import { getMyAssignments,getHomeworkList } from '@/api/homework';
   
   export default {
     name: 'AssignmentList',
     data() {
       return {
-        activeTab: 'pending',
         assignments: [],
         loading: false
-      }
-    },
-    computed: {
-      filteredAssignments() {
-        return this.assignments.filter(assignment => {
-          if (this.activeTab === 'pending') {
-            return assignment.status === 'pending'
-          } else if (this.activeTab === 'submitted') {
-            return assignment.status === 'submitted'
-          } else if (this.activeTab === 'graded') {
-            return assignment.status === 'graded'
-          }
-          return true
-        })
       }
     },
     mounted() {
@@ -164,7 +61,7 @@
       async loadAssignments() {
         try {
           this.loading = true;
-          const response = await getMyAssignments();
+          const response = await getHomeworkList();
           this.assignments = response.data.assignments || response.data.list || response.data || [];
         } catch (error) {
           console.error('Failed to load assignments:', error);
@@ -173,33 +70,9 @@
           this.loading = false;
         }
       },
-      setActiveTab(tab) {
-        this.activeTab = tab
+      goToAssignment(id) {
+        this.$router.push(`/student/assignments/${id}/start`);
       },
-      formatDate(dateString) {
-        const date = new Date(dateString)
-        return date.toLocaleString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-      },
-      getEmptyMessage() {
-        switch (this.activeTab) {
-          case 'pending': return '待完成的'
-          case 'submitted': return '已提交的'
-          case 'graded': return '已批改的'
-          default: return ''
-        }
-      },
-      startAssignment(assignmentId) {
-        this.$router.push(`/student/assignments/${assignmentId}/start`)
-      },
-      viewAssignment(assignmentId) {
-        this.$router.push(`/student/assignments/${assignmentId}/view`)
-      }
     }
   }
   </script>
@@ -303,34 +176,6 @@
     margin: 0;
   }
   
-  .filter-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-  }
-  
-  .tab {
-    padding: 12px 24px;
-    border: 1px solid #dcdfe6;
-    background: white;
-    color: #606266;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: none;
-    font-size: 14px;
-  }
-  
-  .tab:hover {
-    background: #ecf5ff;
-    color: #409eff;
-  }
-  
-  .tab.active {
-    background: #409eff;
-    color: white;
-  }
-  
   .assignment-list {
     display: flex;
     flex-wrap: wrap;
@@ -365,38 +210,17 @@
     margin-bottom: 16px;
   }
   
-  .assignment-title {
-    font-size: 18px;
+  .course-name {
+    font-size: 1.5rem;
+    font-weight: bold;
     color: #303133;
-    margin: 0;
-    flex: 1;
+    margin-bottom: 4px;
   }
   
-  .assignment-status {
-    display: flex;
-    gap: 8px;
-  }
-  
-  .status-badge {
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-  
-  .status-badge.urgent {
-    background: #fef0f0;
-    color: #f56c6c;
-  }
-  
-  .status-badge.submitted {
-    background: #f0f9ff;
+  .teacher-name {
+    font-size: 1rem;
     color: #409eff;
-  }
-  
-  .status-badge.graded {
-    background: #f0f9f0;
-    color: #67c23a;
+    margin-bottom: 10px;
   }
   
   .assignment-meta {
@@ -416,76 +240,6 @@
   
   .meta-icon {
     font-size: 16px;
-  }
-  
-  .assignment-description {
-    color: #606266;
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-  
-  .score-info {
-    background: #f5f7fa;
-    padding: 16px;
-    border-radius: 6px;
-    margin-bottom: 16px;
-  }
-  
-  .score-display {
-    font-size: 24px;
-    font-weight: bold;
-    color: #67c23a;
-    margin-bottom: 8px;
-  }
-  
-  .score-display .total {
-    color: #909399;
-    font-size: 16px;
-  }
-  
-  .teacher-comment {
-    color: #606266;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  
-  .assignment-actions {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .btn {
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: none;
-  }
-  
-  .btn-primary {
-    background: #303133;
-    color: white;
-  }
-  
-  .btn-primary:hover {
-    background: #1d1f21;
-  }
-  
-  .btn-secondary {
-    background: #909399;
-    color: white;
-    cursor: not-allowed;
-  }
-  
-  .btn-outline {
-    background: white;
-    color: #303133;
-    border: 1px solid #dcdfe6;
-  }
-  
-  .btn-outline:hover {
-    background: #f5f7fa;
   }
   
   .empty-state {

@@ -19,7 +19,7 @@
         <div v-if="recommendList && recommendList.length" class="overview-list">
           <div v-for="rec in recommendList" :key="rec.id" class="overview-item" @click="router.push(`/student/course/${rec.id}`)">
             <div class="overview-title">{{ rec.name }}</div>
-            <div class="overview-meta">教师：{{ rec.teacherName }}</div>
+            <div class="overview-meta">教师：{{ rec.teacherRealName }}</div>
             <div class="overview-meta">课程简介：{{ rec.description}}</div>
             <!-- <el-progress :percentage="rec.progress" :stroke-width="8" /> -->
           </div>
@@ -33,7 +33,7 @@
         <div v-if="allCourses && allCourses.length" class="overview-list">
           <div v-for="course in allCourses" :key="course.id" class="overview-item">
             <div class="overview-title" @click="router.push(`/student/courseIntro/${course.id}`)" style="cursor:pointer; color:#409EFF;">{{ course.name }}</div>
-            <div class="overview-meta">教师：{{ course.teacherName }}</div>
+            <div class="overview-meta">教师：{{ course.teacherRealName }}</div>
             <div class="overview-meta">课程简介：{{ course.description }}</div>
             <!-- <el-progress :percentage="course.progress" :stroke-width="8" /> -->
             <el-button type="primary" size="small" @click="enrollCourseHandler(course.id)">选课</el-button>
@@ -49,7 +49,7 @@
         <div class="stat-content">
           <h3>学习时长</h3>
           <div class="stat-value">{{ stats.studyTime }}h</div>
-          <div class="stat-change positive">+{{ stats.studyTimeChange }}h 较上周</div>
+    
         </div>
       </div>
       <div class="stat-card">
@@ -57,7 +57,7 @@
         <div class="stat-content">
           <h3>完成课程</h3>
           <div class="stat-value">{{ stats.completedCourses }}</div>
-          <div class="stat-change positive">+{{ stats.completedCoursesChange }} 较上周</div>
+    
         </div>
       </div>
       <div class="stat-card">
@@ -65,7 +65,7 @@
         <div class="stat-content">
           <h3>平均分数</h3>
           <div class="stat-value">{{ stats.averageScore }}</div>
-          <div class="stat-change positive">+{{ stats.averageScoreChange }} 较上周</div>
+
         </div>
       </div>
       <div class="stat-card">
@@ -73,27 +73,13 @@
         <div class="stat-content">
           <h3>学习目标</h3>
           <div class="stat-value">{{ stats.studyGoal }}%</div>
-          <div class="stat-change positive">+{{ stats.studyGoalChange }}% 较上周</div>
+    
         </div>
       </div>
     </div>
     <!-- 课程/作业/动态模块 -->
     <div class="modules-row">
-      <!-- 课程总览模块
-      <div class="module-card course-overview-card">
-        <div class="module-header">
-          <span class="module-title">课程总览</span>
-          <el-button type="text" @click="$router.push('/student/myCourse')">全部课程</el-button>
-        </div>
-        <div v-if="courses && courses.length" class="overview-list">
-          <div v-for="course in courses" :key="course.id" class="overview-item" @click="$router.push(`/student/course/${course.id}`)">
-            <div class="overview-title">{{ course.name }}</div>
-            <div class="overview-meta">{{ course.teacher }} | {{ course.progress }}% 进度</div>
-            <el-progress :percentage="course.progress" :stroke-width="8" />
-          </div>
-        </div>
-        <div v-else class="empty-module">暂无课程</div>
-      </div> -->
+      
       <!-- 我的课程模块 -->
       <div class="module-card">
         <div class="module-header">
@@ -103,39 +89,36 @@
         <div v-if="courses && courses.length" class="module-list">
           <div v-for="course in courses.slice(0,2)" :key="course.id" class="module-item">
             <div class="item-title">{{ course.name }}</div>
-            <div class="item-meta">{{ course.teacher }} | {{ course.progress }}% 进度</div>
+            <div class="item-meta">{{ course.teacherRealName }} | {{ course.progress }}% 进度</div>
             <!-- <el-progress :percentage="course.progress" :stroke-width="10" /> -->
           </div>
         </div>
         <div v-else class="empty-module">暂无课程</div>
       </div>
       <!-- 我的作业模块 -->
-      <div class="module-card">
-        <div class="module-header">
-          <span class="module-title">我的作业</span>
-          <el-button type="text" @click="router.push('/student/assignment')">查看全部</el-button>
+      <div class="my-block">
+        <div class="block-header">
+          <span class="block-title">我的作业</span>
+          <router-link to="/student/assignment" class="block-more">查看更多</router-link>
         </div>
-        <div v-if="assignments && assignments.length" class="module-list">
-          <div v-for="hw in assignments.slice(0,2)" :key="hw.id" class="module-item">
-            <div class="item-title">{{ hw.title }}</div>
-            <div class="item-meta">{{ hw.courseName }} | 截止：{{ hw.deadline }}</div>
+        <div class="my-assignments-list">
+          <div v-if="assignments.length === 0" class="empty-text">暂无作业</div>
+          <div v-else>
+            <div
+              v-for="assignment in assignments.slice(0,2)"
+              :key="assignment.id"
+              class="assignment-card"
+            >
+              <div class="assignment-title">{{ assignment.title }}</div>
+              <div class="assignment-info">课程：{{ assignment.courseName }}</div>
+              <div class="assignment-deadline">
+                截止：{{ assignment.deadline ? assignment.deadline : '无截止时间' }}
+              </div>
+            </div>
           </div>
         </div>
-        <div v-else class="empty-module">暂无作业</div>
       </div>
-      <!-- 最近动态模块 -->
-      <!-- <div class="module-card">
-        <div class="module-header">
-          <span class="module-title">最近活动</span>
-        </div>
-        <div v-if="recentActivities && recentActivities.length" class="module-list">
-          <div v-for="act in recentActivities.slice(0,3)" :key="act.id" class="module-item">
-            <div class="item-title">{{ act.title }}</div>
-            <div class="item-meta">{{ act.description }} <span class="item-time">{{ act.time }}</span></div>
-          </div>
-        </div>
-        <div v-else class="empty-module">暂无动态</div>
-      </div> -->
+
     </div>
   </div>
 </template>
@@ -146,6 +129,7 @@ import { useRouter } from 'vue-router'
 import { getAllCourses, enrollCourse, getNotMyCourse, getMyCourses } from '@/api/course'
 import { ElMessage } from 'element-plus'
 import { useAttrs } from 'vue'
+import { getHomeworkList } from '@/api/homework'
 
 const router = useRouter()
 const attrs = useAttrs()
@@ -155,11 +139,10 @@ const props = defineProps(['userInfo', 'stats', 'courses', 'assignments', 'recen
 const userInfo = ref(props.userInfo || {})
 const stats = ref(props.stats || {})
 const courses = ref([])
-const assignments = ref(props.assignments || [])
+const assignments = ref([])
 const recentActivities = ref(props.recentActivities || [])
 const allCourses = ref([])
 const recommendList = ref([])
-
 
 async function fetchAllCourses() {
   try {
@@ -192,7 +175,14 @@ onMounted(async () => {
   }
   // 其他初始化逻辑
   fetchAllCourses()
+  getAssignments()
 })
+
+function getAssignments() {
+  getHomeworkList().then(res => {
+    assignments.value = res.data || [];
+  });
+}
 </script>
 
 <style scoped>
@@ -361,6 +351,70 @@ onMounted(async () => {
   flex: 1;
   margin: 0;
   overflow-x: auto;
+}
+.my-block {
+  background: #f7fafd;
+  border-radius: 16px;
+  padding: 20px 24px 16px 24px;
+  margin-top: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.block-title {
+  font-weight: bold;
+  font-size: 18px;
+  color: #222;
+}
+.block-more {
+  color: #409eff;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.block-more:hover {
+  color: #1867c0;
+  text-decoration: underline;
+}
+.my-assignments-list {
+  display: flex;
+  gap: 20px;
+}
+.assignment-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #e6eaf1;
+  padding: 18px 20px 14px 20px;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+.assignment-card:hover {
+  box-shadow: 0 6px 18px #dbeafe;
+  transform: translateY(-4px) scale(1.03);
+}
+.assignment-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: #222;
+  margin-bottom: 8px;
+}
+.assignment-info,
+.assignment-deadline {
+  font-size: 13px;
+  color: #8a97a6;
+  margin-bottom: 2px;
+}
+.empty-text {
+  color: #bbb;
+  font-size: 14px;
+  padding: 16px 0;
 }
 @media (max-width: 900px) {
   .home-container {

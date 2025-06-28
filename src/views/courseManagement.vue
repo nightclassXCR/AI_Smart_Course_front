@@ -13,13 +13,34 @@
     <el-card class="table-card">
       <el-table :data="courseList" style="width: 100%; margin-top: 10px; border-radius: 10px;" :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}">
         <el-table-column prop="name" label="课程名称" />
-        <el-table-column prop="teacher" label="授课教师" />
         <el-table-column prop="description" label="简介" />
+        <el-table-column prop="credit" label="学分"/>
+        <el-table-column prop="hours" label="学时"/>
         <el-table-column label="操作">
           <template #default="scope">
-            <el-button size="small" @click="editCourse(scope.row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="deleteCourse(scope.row.id)">删除</el-button>
-            <el-button size="small" type="primary" @click="viewDetail(scope.row)">详情</el-button>
+            <el-button
+              size="small"
+              type="primary"
+              round
+              icon="el-icon-edit"
+              @click="goToEdit(scope.row.id)"
+              style="margin-right: 8px;"
+            >编辑</el-button>
+            <el-button
+              size="small"
+              type="danger"
+              round
+              icon="el-icon-delete"
+              @click="deleteCourse(scope.row.id)"
+              style="margin-right: 8px;"
+            >删除</el-button>
+            <el-button
+              size="small"
+              type="success"
+              round
+              icon="el-icon-info"
+              @click="goToStudentManage(scope.row.id)"
+            >详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -33,29 +54,32 @@
     
   </div>
 
-  <el-dialog v-model="showAdd" :title="editId ? '编辑课程' : '新增课程'" width="400px">
+  <!-- <el-dialog v-model="showAdd" :title="editId ? '编辑课程' : '新增课程'" width="400px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="课程名称">
           <el-input v-model="form.name" />
         </el-form-item>
-        <el-form-item label="授课教师">
-          <el-input v-model="form.teacherId" />
-        </el-form-item>
         <el-form-item label="简介">
           <el-input v-model="form.description" type="textarea" />
+        </el-form-item>
+        <el-form-item label="学分">
+          <el-input v-model="form.credit" type="textarea" />
+        </el-form-item>
+        <el-form-item label="学时">
+          <el-input v-model="form.hours" type="textarea" />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showAdd = false">取消</el-button>
         <el-button type="primary" @click="saveCourse">保存</el-button>
       </template>
-    </el-dialog>
+    </el-dialog> -->
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getCourseList, createCourse, updateCourse, deleteCourse as delCourse } from '@/api/course';
+import { getCourseByTeacherID, createCourse, updateCourse, deleteCourse as delCourse } from '@/api/course';
 import { ElMessage } from 'element-plus';
 
 const router = useRouter();
@@ -69,7 +93,7 @@ const loading = ref(false);
 const fetchCourses = async () => {
   loading.value = true;
   try {
-    const res = await getCourseList();
+    const res = await getCourseByTeacherID();
     courseList.value = res.data?.list || res.data || [];
   } catch (e) {
     ElMessage.error('获取课程列表失败');
@@ -119,8 +143,12 @@ async function deleteCourse(id) {
   }
 }
 
-function viewDetail(row) {
-  router.push(`/teacher/courseDetail/${row.id}`);
+function goToEdit(id) {
+  router.push(`/teacher/courseDetail/${id}`);
+}
+
+function goToStudentManage(id) {
+  router.push(`/teacher/courseDetail/${id}/students`);
 }
 </script>
 
@@ -180,5 +208,9 @@ function viewDetail(row) {
   .table-card {
     padding: 0 2px 8px 2px;
   }
+}
+.el-button {
+  vertical-align: middle;
+  /* 或者加上 line-height: 1; */
 }
 </style>

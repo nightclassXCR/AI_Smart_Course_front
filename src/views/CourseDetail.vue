@@ -16,7 +16,7 @@
         <div class="logo">📖</div>
         <div>
           <h1>{{ course.name || '课程名称' }}</h1>
-          <p class="subtitle">授课教师：{{ course.teacherName || course.teacher || '未知' }}</p>
+          <p class="subtitle">授课教师：{{ course.teacherRealName || course.teacherName || course.teacher || '未知' }}</p>
         </div>
         <el-button v-if="!(course.statusStudent === 'underway' || course.selected)" type="primary" @click="enrollCourseHandler">选课</el-button>
       </div>
@@ -159,9 +159,9 @@ function goToChapterDetail(id) {
 }
 
 function getTagType(importance) {
-  if (importance === 1 || importance === 'high') return 'danger';   // 红色
-  if (importance === 2 || importance === 'normal' || importance === 'medium') return 'warning'; // 橙色
-  if (importance === 3 || importance === 'low') return 'success';   // 绿色
+  if (importance === 'high') return 'danger';   // 红色
+  if (importance === 'medium') return 'warning'; // 橙色
+  if (importance === 'low') return 'success';   // 绿色
   return 'info'; // 默认蓝色
 }
 </script>

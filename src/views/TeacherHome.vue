@@ -91,7 +91,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getCourseList } from '@/api/course';
+import { getCourseByTeacherID} from '@/api/course';
 import { ElMessage } from 'element-plus';
 const router = useRouter();
 const props = defineProps(['userInfo', 'stats', 'courses', 'pendingTasks']);
@@ -99,7 +99,7 @@ const courses = ref([]);
 
 async function fetchCourses() {
   try {
-    const res = await getCourseList();
+    const res = await getCourseByTeacherID();
     courses.value = res.data?.list || res.data || [];
   } catch (e) {
     ElMessage.error('获取课程列表失败');

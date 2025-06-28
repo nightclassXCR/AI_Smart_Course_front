@@ -30,7 +30,7 @@
           </div>
         </div>
         <div class="course-meta">
-          <span>授课教师：{{ course.teacherName || course.teacher }}</span>
+          <span>授课教师：{{ course.teacherRealName || course.teacher }}</span>
         </div>
         <div class="course-progress">
           <!-- <el-progress :percentage="course.progress" :stroke-width="16" /> -->

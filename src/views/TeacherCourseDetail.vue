@@ -5,10 +5,7 @@
       <el-button type="text" icon="el-icon-arrow-left" @click="$router.back()">返回</el-button>
       <div class="header-title">
         <div class="logo">📖</div>
-        <div>
-          <h1>{{ course.name }}</h1>
-          <p class="subtitle">授课教师：{{ course.teacher }}</p>
-        </div>
+
       </div>
     </div>
     <!-- 课程信息编辑区 -->
@@ -17,11 +14,8 @@
         <el-form-item label="课程名称">
           <el-input v-model="course.name" />
         </el-form-item>
-        <el-form-item label="授课教师">
-          <el-input v-model="course.teacher" />
-        </el-form-item>
         <el-form-item label="简介">
-          <el-input v-model="course.desc" type="textarea" />
+          <el-input v-model="course.description" type="textarea" />
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="saveCourse">保存课程信息</el-button>

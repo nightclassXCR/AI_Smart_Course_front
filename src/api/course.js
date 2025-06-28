@@ -114,3 +114,10 @@ export function getGroupedConcepts(courseId) {
     method: 'get'
   });
 }
+
+export function getCourseByTeacherID(){
+  return request({
+    url:'/courses/getCourseNameByUserId',
+    method:'get'
+  });
+}

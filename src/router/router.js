@@ -28,9 +28,8 @@ const routes = [
         component: () => import('@/views/TeacherCourseDetail.vue')
       },
       {
-        path: 'studentManagement',
-        name: 'StudentManagement',
-        component: () => import('@/views/studentManagement.vue')
+        path: 'courseDetail/:id/students',
+        component: () => import('@/views/studentManagement.vue'),
       },
       {
         path: 'homeworkManagement',
