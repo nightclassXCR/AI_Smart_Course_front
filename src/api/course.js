@@ -55,10 +55,11 @@ export function getAllCourses() {
 }
 
 // 学生选课
-export function enrollCourse(courseId) {
+export function enrollCourse(courseId, userId) {
   return request({
-    url: `/courses/${courseId}/enroll`,
-    method: 'post'
+    url: `/courses/enroll/${courseId}`,
+    method: 'post',
+    data: { userId }
   });
 }
 
@@ -71,12 +72,14 @@ export function getMyCourses() {
 }
 
 // 退课
-export function quitCourse(courseId) {
+export function unenrollCourse(courseId, userId) {
   return request({
-    url: `/courses/${courseId}/quit`,
-    method: 'post'
+    url: `/courses/unenroll/${courseId}`,
+    method: 'post',
+    data: { userId }
   });
-} 
+}
+
 // 在学生端以关键字形式搜索我的课程
 export function searchMyCourses(keyword) {
   return request({
@@ -87,6 +90,7 @@ export function searchMyCourses(keyword) {
     }
   });
 }
+
 // 查询我没选的课程
 export function getNotMyCourse(){
   return request({
@@ -108,5 +112,12 @@ export function getGroupedConcepts(courseId) {
   return request({
     url: `/courses/groupedConcepts/${courseId}`,
     method: 'get'
+  });
+}
+
+export function getCourseByTeacherID(){
+  return request({
+    url:'/courses/getCourseNameByUserId',
+    method:'get'
   });
 }

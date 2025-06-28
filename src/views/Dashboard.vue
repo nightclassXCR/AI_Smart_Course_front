@@ -8,7 +8,7 @@
       <div class="nav-menu">
         <router-link to="/teacher" class="nav-item">首页</router-link>
         <router-link to="/teacher/courseManagement" class="nav-item">课程管理</router-link>
-        <router-link to="/teacher/studentManagement" class="nav-item">学生管理</router-link>
+        <!-- <router-link to="/teacher/studentManagement" class="nav-item">学生管理</router-link> -->
         <router-link to="/teacher/homeworkManagement" class="nav-item">作业管理</router-link>
         <router-link to="/teacher/resourceCenter" class="nav-item">资源中心</router-link>
         <router-link to="/teacher/learningAnalysis" class="nav-item">学习分析</router-link>

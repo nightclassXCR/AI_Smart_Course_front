@@ -2,14 +2,23 @@
   <div class="course-detail-container">
     <!-- 顶部信息区 -->
     <div class="header-area">
-      <el-button type="text" icon="el-icon-arrow-left" @click="$router.back()">返回</el-button>
+      <el-button
+        type="primary"
+        plain
+        round
+        icon="el-icon-arrow-left"
+        @click="$router.back()"
+        class="back-btn"
+      >
+        返回
+      </el-button>
       <div class="header-title">
         <div class="logo">📖</div>
         <div>
           <h1>{{ course.name || '课程名称' }}</h1>
-          <p class="subtitle">授课教师：{{ course.teacherName || course.teacher || '未知' }}</p>
+          <p class="subtitle">授课教师：{{ course.teacherRealName || course.teacherName || course.teacher || '未知' }}</p>
         </div>
-        <el-button v-if="!course.selected" type="primary" @click="enrollCourseHandler">选课</el-button>
+        <el-button v-if="!(course.statusStudent === 'underway' || course.selected)" type="primary" @click="enrollCourseHandler">选课</el-button>
       </div>
     </div>
     <!-- 课程简介卡片 -->
@@ -20,16 +29,30 @@
     <div class="chapter-section">
       <div class="chapter-title">课程章节与知识点</div>
       <div v-if="chapters.length">
-        <div v-for="chapter in chapters" :key="chapter.id" class="chapter-card">
+        <el-card
+          v-for="chapter in chapters"
+          :key="chapter.id"
+          class="chapter-block"
+          shadow="hover"
+          @click="goToChapterDetail(chapter.id)"
+          style="cursor:pointer"
+        >
           <div class="chapter-header">
-            <span class="chapter-name">{{ chapter.name }}</span>
+            <i class="el-icon-notebook-2 chapter-icon"></i>
+            <span class="chapter-name">{{ chapter.title }}</span>
           </div>
           <div class="concept-list">
-            <span v-for="concept in groupedConcepts[chapter.id] || []" :key="concept.id" class="concept-item">
+            <el-tag
+              v-for="concept in groupedConcepts[chapter.id] || []"
+              :key="concept.id"
+              class="concept-tag"
+              :type="getTagType(concept.importance)"
+            >
               <i class="el-icon-collection"></i> {{ concept.name }}
-            </span>
+            </el-tag>
+            <span v-if="!(groupedConcepts[chapter.id] && groupedConcepts[chapter.id].length)" class="no-concept">暂无知识点</span>
           </div>
-        </div>
+        </el-card>
       </div>
       <div v-else class="empty-state">暂无章节</div>
     </div>
@@ -58,11 +81,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getCourseDetail, getCourseChapters, enrollCourse, getGroupedConcepts } from '@/api/course';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const route = useRoute();
+const router = useRouter();
 const courseId = route.params.id;
 const course = ref({});
 const chapters = ref([]);
@@ -79,7 +103,10 @@ async function fetchCourseDetail() {
     // 获取按章节分组的知识点
     const conceptRes = await getGroupedConcepts(courseId);
     groupedConcepts.value = conceptRes.data || {};
-    // 调试打印
+    // 调试打印每个章节下的概念
+    Object.keys(groupedConcepts.value).forEach(key => {
+      console.log(`章节ID: ${key}，概念数据:`, groupedConcepts.value[key]);
+    });
     console.log('groupedConcepts:', groupedConcepts.value);
     console.log('chapters:', chapters.value);
   } catch (e) {
@@ -89,11 +116,23 @@ async function fetchCourseDetail() {
 
 async function enrollCourseHandler() {
   try {
+    await ElMessageBox.confirm(
+      '确定要选修该课程吗？',
+      '选课确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info',
+      }
+    )
     await enrollCourse(course.value.id);
     ElMessage.success('选课成功');
     fetchCourseDetail();
   } catch (e) {
-    ElMessage.error('选课失败');
+    if (e !== 'cancel') {
+      ElMessage.error('选课失败');
+    }
+    // 用户取消时不提示错误
   }
 }
 
@@ -113,6 +152,17 @@ function askAI() {
     // 模拟AI回复
     qaList.value.push({ role: 'ai', text: `AI正在思考："${userQ}"...（此处可对接真实AI接口）` });
   }, 800);
+}
+
+function goToChapterDetail(id) {
+  router.push(`/student/chapter/${id}`);
+}
+
+function getTagType(importance) {
+  if (importance === 'high') return 'danger';   // 红色
+  if (importance === 'medium') return 'warning'; // 橙色
+  if (importance === 'low') return 'success';   // 绿色
+  return 'info'; // 默认蓝色
 }
 </script>
 
@@ -171,43 +221,46 @@ function askAI() {
   margin-bottom: 10px;
   color: #409EFF;
 }
-.chapter-card {
+.chapter-block {
+  margin-bottom: 18px;
+  border-radius: 12px;
   background: #f8fafc;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 14px 18px 10px 18px;
-  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.06);
+  padding: 18px 20px 14px 20px;
 }
 .chapter-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #409EFF;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.chapter-icon {
+  font-size: 22px;
 }
 .chapter-name {
   font-weight: 500;
   font-size: 15px;
 }
-.chapter-progress {
-  color: #67c23a;
-  font-size: 13px;
-}
 .concept-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 2px;
+  gap: 10px;
+  margin-left: 24px;
 }
-.concept-item {
-  background: #fff;
-  border-radius: 8px;
-  padding: 4px 12px;
-  font-size: 14px;
-  color: #222;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.concept-tag {
+  font-size: 15px;
+  padding: 6px 16px;
+  border-radius: 16px;
+  background: #f0f9ff;
+  color: #409EFF;
+  border: none;
+}
+.no-concept {
+  color: #aaa;
+  margin-left: 24px;
 }
 .qa-card {
   background: #f8fafc;
@@ -277,5 +330,18 @@ function askAI() {
     max-width: 100vw;
     padding: 10px 2vw;
   }
+}
+.back-btn {
+  margin-bottom: 18px;
+  font-size: 15px;
+  padding: 6px 18px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.back-btn:hover {
+  background: #409EFF;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(64,158,255,0.15);
 }
 </style> 

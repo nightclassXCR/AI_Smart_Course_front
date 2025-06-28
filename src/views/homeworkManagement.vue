@@ -128,6 +128,7 @@ const fetchHomework = async () => {
   loading.value = true;
   try {
     const res = await getHomeworkList();
+    
     homeworkList.value = res.data?.list || res.data || [];
   } catch (e) {
     ElMessage.error('获取作业列表失败');

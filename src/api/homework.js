@@ -159,7 +159,7 @@ export function deleteQuestion(questionId) {
 // 获取学生端我的作业列表
 export function getMyAssignments() {
   return request({
-    url: '/student/assignments',
+    url: '/homework',
     method: 'get'
   });
 } 

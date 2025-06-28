@@ -116,7 +116,9 @@ const fetchResources = async () => {
   loading.value = true;
   try {
     const res = await getResourceList();
+    console.log("测试" ,res)
     resourceList.value = res.data?.list || res.data || [];
+ 
   } catch (e) {
     ElMessage.error('获取资源列表失败');
   } finally {
