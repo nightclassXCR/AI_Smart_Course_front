@@ -9,7 +9,7 @@
         <router-link to="/student" class="nav-item">首页</router-link>
         <router-link to="/student/myCourse" class="nav-item">我的课程</router-link>
         <router-link to="/student/assignment" class="nav-item">我的作业</router-link>
-        <router-link to="/student/progress" class="nav-item">学习进度</router-link>
+        <!-- <router-link to="/student/progress" class="nav-item">学习进度</router-link> -->
         <router-link to="/student/knowledgeMap" class="nav-item">知识图谱</router-link>
         <router-link to="/student/profile" class="nav-item">个人中心</router-link>
       </div>

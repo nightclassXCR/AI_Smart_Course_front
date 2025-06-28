@@ -68,14 +68,14 @@
 
         </div>
       </div>
-      <div class="stat-card">
+      <!-- <div class="stat-card">
         <div class="stat-icon"><i class="el-icon-aim"></i></div>
         <div class="stat-content">
           <h3>学习目标</h3>
           <div class="stat-value">{{ stats.studyGoal }}%</div>
     
         </div>
-      </div>
+      </div> -->
     </div>
     <!-- 课程/作业/动态模块 -->
     <div class="modules-row">
@@ -89,7 +89,7 @@
         <div v-if="courses && courses.length" class="module-list">
           <div v-for="course in courses.slice(0,2)" :key="course.id" class="module-item">
             <div class="item-title">{{ course.name }}</div>
-            <div class="item-meta">{{ course.teacherRealName }} | {{ course.progress }}% 进度</div>
+            <div class="item-meta">{{ course.teacherRealName }} | {{ course.learningPosition }}</div>
             <!-- <el-progress :percentage="course.progress" :stroke-width="10" /> -->
           </div>
         </div>
@@ -130,6 +130,7 @@ import { getAllCourses, enrollCourse, getNotMyCourse, getMyCourses } from '@/api
 import { ElMessage } from 'element-plus'
 import { useAttrs } from 'vue'
 import { getHomeworkList } from '@/api/homework'
+import { getMyTotalStudyTime, getLatestLearningLogInCourse } from '@/api/analysis'
 
 const router = useRouter()
 const attrs = useAttrs()
@@ -165,14 +166,90 @@ async function enrollCourseHandler(courseId) {
   }
 }
 
-onMounted(async () => {
-  // 获取我的课程
+// 获取学习时长数据
+async function fetchStudyTime() {
+  try {
+    const res = await getMyTotalStudyTime()
+    if (res.data !== undefined && res.data !== null) {
+      // 后端返回的是小时，直接使用
+      stats.value.studyTime = res.data
+    }
+  } catch (e) {
+    console.error('获取学习时长失败:', e)
+    stats.value.studyTime = 0
+  }
+}
+
+// 获取课程的最新学习位置
+async function fetchCourseLearningProgress() {
   try {
     const res = await getMyCourses()
-    courses.value = (res.data?.list || res.data || []).slice(0, 2)
+    const courseList = res.data?.list || res.data || []
+    
+    // 为每个课程获取最新学习记录
+    const coursesWithProgress = await Promise.all(
+      courseList.map(async (course) => {
+        try {
+          const progressRes = await getLatestLearningLogInCourse(course.id)
+          const latestLog = progressRes.data
+          
+          // 根据最新学习记录的 targetType 生成学习位置描述
+          let learningPosition = '未开始学习'
+          if (latestLog) {
+            switch (latestLog.targetType) {
+              case 'course':
+                learningPosition = `正在学习：第${latestLog.targetId}章`
+                break
+              case 'concept':
+                learningPosition = `正在学习：概念${latestLog.targetId}`
+                break
+              case 'course':
+                learningPosition = '正在学习课程'
+                break
+              case 'task':
+                learningPosition = `正在做作业${latestLog.targetId}`
+                break
+              case 'resource':
+                learningPosition = `正在查看资源${latestLog.targetId}`
+                break
+              default:
+                learningPosition = '学习中'
+                break
+            }
+            
+            // 如果有详细信息，可以添加到学习位置中
+            if (latestLog.detail) {
+              learningPosition += ` - ${latestLog.detail}`
+            }
+          }
+          
+          return {
+            ...course,
+            learningPosition
+          }
+        } catch (error) {
+          console.error(`获取课程 ${course.id} 学习进度失败:`, error)
+          return {
+            ...course,
+            learningPosition: '未开始学习'
+          }
+        }
+      })
+    )
+    
+    courses.value = coursesWithProgress.slice(0, 2)
   } catch (e) {
     ElMessage.error('获取我的课程失败')
   }
+}
+
+onMounted(async () => {
+  // 获取学习时长
+  await fetchStudyTime()
+  
+  // 获取课程学习进度
+  await fetchCourseLearningProgress()
+  
   // 其他初始化逻辑
   fetchAllCourses()
   getAssignments()

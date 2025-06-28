@@ -19,7 +19,14 @@
     <el-card class="concept-card">
       <h3>概念列表</h3>
       <div v-if="concepts.length" class="concept-list">
-        <el-tag v-for="concept in concepts" :key="concept.id" class="concept-tag" type="info">
+        <el-tag 
+          v-for="concept in concepts" 
+          :key="concept.id" 
+          class="concept-tag" 
+          :type="currentConceptId === concept.id ? 'primary' : 'info'"
+          @click="handleConceptClick(concept.id)"
+          style="cursor: pointer;"
+        >
           <i class="el-icon-collection"></i> {{ concept.name }}
         </el-tag>
       </div>
@@ -38,9 +45,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getChapterDetail, getConceptsByChapter, getResourcesByChapter } from '@/api/chapter'
+import { viewConcept } from '@/api/concept'
 
 const route = useRoute()
 const router = useRouter()
@@ -48,6 +56,48 @@ const chapterId = route.params.id
 const chapter = ref({})
 const concepts = ref([])
 const resources = ref([])
+
+// 记录页面进入时间
+const pageEnterTime = ref(Date.now())
+// 记录当前查看的概念ID
+const currentConceptId = ref(null)
+
+// 处理概念点击 - 记录开始查看某个概念
+const handleConceptClick = async (conceptId) => {
+  // 如果之前有查看其他概念，先记录之前概念的学习时长
+  if (currentConceptId.value && currentConceptId.value !== conceptId) {
+    await recordConceptDuration(currentConceptId.value)
+  }
+  
+  // 更新当前查看的概念
+  currentConceptId.value = conceptId
+  pageEnterTime.value = Date.now()
+  
+  console.log(`开始查看概念: ${conceptId}`)
+}
+
+// 记录概念学习时长
+const recordConceptDuration = async (conceptId) => {
+  const now = Date.now()
+  const durationSeconds = Math.floor((now - pageEnterTime.value) / 1000)
+  
+  // 如果学习时长超过1秒才记录
+  if (durationSeconds > 1) {
+    try {
+      await viewConcept(conceptId, durationSeconds)
+      console.log(`记录概念 ${conceptId} 学习时长: ${durationSeconds}秒`)
+    } catch (error) {
+      console.error('记录学习时长失败:', error)
+    }
+  }
+}
+
+// 页面卸载时记录最后一个概念的学习时长
+onUnmounted(async () => {
+  if (currentConceptId.value) {
+    await recordConceptDuration(currentConceptId.value)
+  }
+})
 
 onMounted(async () => {
   // 获取章节详情
