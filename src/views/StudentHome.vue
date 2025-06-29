@@ -5,7 +5,7 @@
       <div class="header-title">
         <div class="logo">👋</div>
         <div>
-          <h1>你好{{ props.userInfo.name || '' }}同学</h1>
+          <h1>你好，{{ props.userInfo.name || '' }}同学</h1>
           <p class="subtitle">继续你的学习之旅，今天也要加油！</p>
         </div>
       </div>
@@ -173,8 +173,8 @@ async function fetchStudyTime() {
   try {
     const res = await getMyTotalStudyTime()
     if (res.data !== undefined && res.data !== null) {
-      // 后端返回的是小时，直接使用
-      stats.value.studyTime = res.data
+      // 后端返回的是小时，进行四舍五入保留两位小数
+      stats.value.studyTime = Math.round(res.data * 100) / 100
     }
   } catch (e) {
     console.error('获取学习时长失败:', e)

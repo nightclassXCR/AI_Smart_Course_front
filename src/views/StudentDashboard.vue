@@ -8,7 +8,7 @@
       <div class="nav-menu" :class="{ 'is-mobile': isMobile, 'show-mobile': showMobileMenu }">
         <router-link to="/student" class="nav-item">首页</router-link>
         <router-link to="/student/myCourse" class="nav-item">我的课程</router-link>
-        <router-link to="/student/assignment" class="nav-item">我的作业</router-link>
+        <router-link to="/student/assignment" class="nav-item">我的任务</router-link>
         <!-- <router-link to="/student/progress" class="nav-item">学习进度</router-link> -->
         <router-link to="/student/knowledgeMap" class="nav-item">知识图谱</router-link>
         <router-link to="/student/profile" class="nav-item">个人中心</router-link>
@@ -83,12 +83,17 @@ export default {
   methods: {
     async loadUserInfo() {
       try {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-        if (userInfo) {
-          this.userInfo = userInfo
+        const userStr = localStorage.getItem('user')
+        if (userStr) {
+          const user = JSON.parse(userStr)
+          this.userInfo = {
+            name: user.name || user.username || user.realName || '同学',
+            avatar: user.avatar || user.avatarUrl || ''
+          }
         }
       } catch (error) {
         console.error('Failed to load user info:', error)
+        this.userInfo = { name: '同学', avatar: '' }
       }
     },
     async loadDashboardData() {

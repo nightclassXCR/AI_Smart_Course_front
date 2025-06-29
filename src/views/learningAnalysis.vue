@@ -25,7 +25,7 @@
         </el-card>
       </div>
       <!-- 课程成绩分布表 -->
-      <el-card class="page-card">
+      <!-- <el-card class="page-card">
         <div class="page-header">
           <h2>课程成绩分布</h2>
         </div>
@@ -38,7 +38,7 @@
           <el-table-column prop="passRate" label="及格率" />
           <el-table-column prop="excellentRate" label="优秀率" />
         </el-table>
-      </el-card>
+      </el-card> -->
       <!-- 可选：学生成绩明细 -->
       <!-- <el-card class="page-card">
         <div class="page-header">
@@ -76,49 +76,97 @@
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
+import { getCourseByTeacherID } from '@/api/course'
 
 const stats = ref({
-  courseCount: 3,
-  studentCount: 120,
-  avgScore: 78
+  courseCount: 0,
+  studentCount: 0,
+  avgScore: 0
 })
 
-const courseStats = ref([
-  { name: '高等数学', studentCount: 60, avgScore: 80, maxScore: 98, minScore: 45, passRate: '90%', excellentRate: '25%' },
-  { name: '线性代数', studentCount: 40, avgScore: 75, maxScore: 95, minScore: 50, passRate: '85%', excellentRate: '18%' },
-  { name: '大学英语', studentCount: 20, avgScore: 70, maxScore: 90, minScore: 55, passRate: '80%', excellentRate: '10%' }
-])
+const courseStats = ref([])
+const courseList = ref([])
 
-// 假设课程列表和成绩分布数据如下，实际可从后端获取
-const courseList = ref([
-  { id: 1, name: '高等数学' },
-  { id: 2, name: '线性代数' },
-  { id: 3, name: '大学英语' }
-])
-
+// 成绩分布数据（暂时使用模拟数据，后续可以从后端获取）
 const scoreDistributions = ref({
   1: [5, 12, 20, 18, 7], // 高等数学
   2: [2, 10, 15, 22, 11], // 线性代数
   3: [1, 8, 14, 19, 17]   // 大学英语
 })
 
-const selectedCourse = ref(courseList.value[0].id)
+const selectedCourse = ref(null)
 let chartInstance = null
 
+// 获取课程统计数据
+const fetchCourseStats = async () => {
+  try {
+    const response = await getCourseByTeacherID()
+    const data = response.data || response
+    
+    if (Array.isArray(data)) {
+      courseStats.value = data.map(course => ({
+        name: course.name,
+        studentCount: course.studentCount || 0,
+        avgScore: course.averageScore ? Math.round(course.averageScore * 10) / 10 : 0,
+        maxScore: course.maxScore || 0,
+        minScore: course.minScore || 0,
+        passRate: course.passRate || '0%',
+        excellentRate: course.excellentRate || '0%'
+      }))
+      
+      // 更新课程列表
+      courseList.value = data.map(course => ({
+        id: course.id,
+        name: course.name
+      }))
+      
+      // 更新统计信息
+      stats.value = {
+        courseCount: data.length,
+        studentCount: data.reduce((sum, course) => sum + (course.studentCount || 0), 0),
+        avgScore: data.length > 0 ? Math.round(data.reduce((sum, course) => sum + (course.averageScore || 0), 0) / data.length * 10) / 10 : 0
+      }
+      
+      // 设置默认选中的课程
+      if (courseList.value.length > 0 && !selectedCourse.value) {
+        selectedCourse.value = courseList.value[0].id
+      }
+      
+      // 更新图表
+      if (chartInstance && selectedCourse.value) {
+        updateChart()
+      }
+    }
+  } catch (error) {
+    console.error('获取课程统计数据失败:', error)
+    ElMessage.error('获取课程统计数据失败')
+  }
+}
+
 const updateChart = () => {
-  if (!chartInstance) return
+  if (!chartInstance || !selectedCourse.value) return
+  
+  // 这里可以根据选中的课程从后端获取具体的成绩分布数据
+  // 暂时使用模拟数据
+  const distributionData = scoreDistributions.value[selectedCourse.value] || [0, 0, 0, 0, 0]
+  
   chartInstance.setOption({
+    title: { 
+      text: `${courseList.value.find(c => c.id === selectedCourse.value)?.name || '课程'}成绩分布` 
+    },
     series: [{
-      data: scoreDistributions.value[selectedCourse.value]
+      data: distributionData
     }]
   })
 }
 
 const refreshData = () => {
-  ElMessage.info('刷新成绩分析数据（请对接实际逻辑）')
+  fetchCourseStats()
+  ElMessage.success('数据已刷新')
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 初始化图表
   chartInstance = echarts.init(document.getElementById('score-chart'))
   chartInstance.setOption({
     title: { text: '成绩分布' },
@@ -130,15 +178,20 @@ onMounted(() => {
     yAxis: { type: 'value' },
     series: [{
       name: '人数',
-      data: scoreDistributions.value[selectedCourse.value],
+      data: [0, 0, 0, 0, 0],
       type: 'bar',
       barWidth: '40%'
     }]
   })
+  
+  // 获取数据
+  await fetchCourseStats()
 })
 
-// 监听课程选择变化，更新图表
-watch(selectedCourse, updateChart)
+// 监听选中课程变化
+watch(selectedCourse, () => {
+  updateChart()
+})
 </script>
 
 <style scoped>
