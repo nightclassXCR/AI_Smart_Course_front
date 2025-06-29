@@ -25,7 +25,7 @@ export function createCourse(data) {
 export function updateCourse(data) {
   return request({
     url: '/courses',
-    method: 'post',
+    method: 'put',
     data
   });
 }

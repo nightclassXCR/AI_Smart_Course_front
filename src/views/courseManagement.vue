@@ -8,7 +8,7 @@
           <p class="subtitle">管理你负责的所有大学课程，支持新增、编辑、删除</p>
         </div>
       </div>
-      <el-button type="primary" @click="showAdd = true">新增课程</el-button>
+      <el-button type="primary" @click="goToAdd">新增课程</el-button>
     </div>
     <el-card class="table-card">
       <el-table :data="courseList" style="width: 100%; margin-top: 10px; border-radius: 10px;" :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}">
@@ -149,6 +149,10 @@ function goToEdit(id) {
 
 function goToStudentManage(id) {
   router.push(`/teacher/courseDetail/${id}/students`);
+}
+
+function goToAdd() {
+  router.push('/teacher/courseDetail');
 }
 </script>
 
