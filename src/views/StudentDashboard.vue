@@ -14,11 +14,11 @@
         <router-link to="/student/profile" class="nav-item">个人中心</router-link>
       </div>
       <div class="nav-right">
-        <div class="search-box">
+        <!-- <div class="search-box">
           <input type="text" placeholder="搜索课程、知识点..." />
           <button class="search-btn">🔍</button>
-        </div>
-        <div class="notification-btn">🔔</div>
+        </div> -->
+        <!-- <div class="notification-btn">🔔</div> -->
         <div class="menu-btn" @click="toggleMobileMenu" v-if="isMobile">
           <i class="el-icon-menu"></i>
         </div>

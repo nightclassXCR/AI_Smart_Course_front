@@ -85,6 +85,11 @@ const routes = [
         component: () => import('@/views/Assignment.vue')
       },
       {
+        path: 'assignment/:id/start',
+        name: 'AssignmentAnswer',
+        component: () => import('@/views/AssignmentAnswer.vue')
+      },
+      {
         path: 'progress',
         name: 'Progress',
         component: () => import('@/views/Progress.vue')

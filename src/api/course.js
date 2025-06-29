@@ -121,3 +121,10 @@ export function getCourseByTeacherID(){
     method:'get'
   });
 }
+
+export function getCompleteCourse(){
+  return request({
+    url:'/courses/getMyCompletedCourse',
+    method:'get'
+  });
+}

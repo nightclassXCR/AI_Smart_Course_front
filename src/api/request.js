@@ -23,16 +23,19 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   response => {
-    // 只做数据处理，不做页面跳转
+    // 处理token和user信息
     const { token, user } = response.data || response;
     if (token && user) {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
     }
+    // 添加调试信息
+    console.log('API响应成功:', response.config.url, response.data);
     return response.data;
   },
   error => {
-    // 可统一处理错误
+    // 添加调试信息
+    console.error('API响应错误:', error.config?.url, error.response?.status, error.response?.data);
     return Promise.reject(error);
   }
 );

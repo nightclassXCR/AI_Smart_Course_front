@@ -89,7 +89,7 @@
         <div v-if="courses && courses.length" class="module-list">
           <div v-for="course in courses.slice(0,2)" :key="course.id" class="module-item">
             <div class="item-title">{{ course.name }}</div>
-            <div class="item-meta">{{ course.teacherRealName }} | {{ course.learningPosition }}</div>
+            <div class="item-meta">{{ course.learningPosition }}</div>
             <!-- <el-progress :percentage="course.progress" :stroke-width="10" /> -->
           </div>
         </div>
@@ -108,6 +108,8 @@
               v-for="assignment in assignments.slice(0,2)"
               :key="assignment.id"
               class="assignment-card"
+              @click="goToAssignment(assignment.id)"
+              style="cursor:pointer"
             >
               <div class="assignment-title">{{ assignment.title }}</div>
               <div class="assignment-info">课程：{{ assignment.courseName }}</div>
@@ -126,7 +128,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAllCourses, enrollCourse, getNotMyCourse, getMyCourses } from '@/api/course'
+import { getCompleteCourse, enrollCourse, getNotMyCourse, getMyCourses } from '@/api/course'
 import { ElMessage } from 'element-plus'
 import { useAttrs } from 'vue'
 import { getHomeworkList } from '@/api/homework'
@@ -180,6 +182,17 @@ async function fetchStudyTime() {
   }
 }
 
+async function fetchCompletedCoursesCount(params) {
+  try{
+    const res = await getCompleteCourse()
+    stats.value.completedCourses =res.data
+  } catch(e){
+    console.error('获取完成课程失败：',e)
+    stats.value.completedCourses = 0
+  }
+  
+}
+
 // 获取课程的最新学习位置
 async function fetchCourseLearningProgress() {
   try {
@@ -197,30 +210,30 @@ async function fetchCourseLearningProgress() {
           let learningPosition = '未开始学习'
           if (latestLog) {
             switch (latestLog.targetType) {
-              case 'course':
-                learningPosition = `正在学习：第${latestLog.targetId}章`
+              case 'chapter':
+                learningPosition = `正在学习：章节:${latestLog.targetName}`
                 break
               case 'concept':
-                learningPosition = `正在学习：概念${latestLog.targetId}`
+                learningPosition = `正在学习：概念 ${latestLog.targetName}`
                 break
               case 'course':
                 learningPosition = '正在学习课程'
                 break
               case 'task':
-                learningPosition = `正在做作业${latestLog.targetId}`
+                learningPosition = `正在做作业${latestLog.targetName}`
                 break
               case 'resource':
-                learningPosition = `正在查看资源${latestLog.targetId}`
+                learningPosition = `正在查看资源${latestLog.targetName}`
                 break
               default:
                 learningPosition = '学习中'
                 break
             }
             
-            // 如果有详细信息，可以添加到学习位置中
-            if (latestLog.detail) {
-              learningPosition += ` - ${latestLog.detail}`
-            }
+            // // 如果有详细信息，可以添加到学习位置中
+            // if (latestLog.detail) {
+            //   learningPosition += ` - ${latestLog.detail}`
+            // }
           }
           
           return {
@@ -246,6 +259,7 @@ async function fetchCourseLearningProgress() {
 onMounted(async () => {
   // 获取学习时长
   await fetchStudyTime()
+  await fetchCompletedCoursesCount()
   
   // 获取课程学习进度
   await fetchCourseLearningProgress()
@@ -259,6 +273,10 @@ function getAssignments() {
   getHomeworkList().then(res => {
     assignments.value = res.data || [];
   });
+}
+
+function goToAssignment(id) {
+  router.push(`/student/assignment/${id}/start`)
 }
 </script>
 
