@@ -128,3 +128,10 @@ export function getCompleteCourse(){
     method:'get'
   });
 }
+
+export function getCourseCountByTeacherId(){
+  return request({
+    url:'/courses/getCourseCountByTeacherId',
+    method:'get'
+  });
+}
