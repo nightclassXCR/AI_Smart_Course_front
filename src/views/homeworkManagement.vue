@@ -14,6 +14,16 @@
       <el-table :data="homeworkList" style="width: 100%; margin-top: 10px; border-radius: 10px;" :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}">
         <el-table-column prop="title" label="作业标题" />
         <el-table-column prop="courseName" label="所属课程" />
+        <el-table-column prop="type" label="作业类型">
+          <template #default="scope">
+            {{ typeMap[scope.row.type] }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="作业状态">
+          <template #default="scope">
+            {{ statusMap[scope.row.status] }}
+          </template>
+        </el-table-column>
         <el-table-column prop="deadline" label="截止日期" />
         <el-table-column label="操作">
           <template #default="scope">
@@ -37,8 +47,30 @@
         <el-form-item label="所属课程">
           <el-input v-model="form.courseName" />
         </el-form-item>
+        <el-form-item label="任务类型">
+          <el-select v-model="form.type" placeholder="请选择类型">
+            <el-option label="阅读" value="read" />
+            <el-option label="作业" value="homework" />
+            <el-option label="项目" value="project" />
+            <el-option label="测试" value="quiz" />
+            <el-option label="考试" value="exam" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="任务状态">
+          <el-select v-model="form.status" placeholder="请选择类型">
+            <el-option label="草稿" value="draft" />
+            <el-option label="已发布" value="published" />
+            <el-option label="已完成" value="completed" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="截止日期">
-          <el-input v-model="form.deadline" />
+          <el-date-picker
+            v-model="form.deadline"
+            type="datetime"
+            placeholder="选择截止日期和时间"
+            format="YYYY-MM-DD HH:mm"
+            value-format="YYYY-MM-DD HH:mm"
+          />
         </el-form-item>
       </el-form>
       <div style="margin: 10px 0;">
@@ -73,10 +105,24 @@ import { getHomeworkList, createHomework, updateHomework, deleteHomework } from 
 import { ElMessage } from 'element-plus';
 const homeworkList = ref([]);
 const showAdd = ref(false);
-const form = ref({ title: '',courseName:'', courseId: '', deadline: '', questions: [] });
+const form = ref({ title: '',courseName:'', status:'', type:'', courseId: '', deadline: '', questions: [] });
 const editId = ref(null);
 const showQuestionDialog = ref(false);
 const loading = ref(false);
+
+const typeMap = {
+  reading: '阅读',
+  homework: '作业',
+  project: '项目',
+  quiz: '小测',
+  exam: '考试'
+}
+
+const statusMap = {
+  draft: '草稿',
+  published: '已发布',
+  completed: '已完成'
+}
 
 const fetchHomework = async () => {
   loading.value = true;

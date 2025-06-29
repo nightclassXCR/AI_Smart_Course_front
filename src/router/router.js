@@ -4,28 +4,28 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/Login.vue')
+    component: () => import('../views/Login.vue')
   },
   // 老师端
   {
     path: '/teacher',
     name: 'TeacherDashboard',
-    component: () => import('@/views/Dashboard.vue'),
+    component: () => import('../views/Dashboard.vue'),
     children: [
       {
         path: '',
         name: 'TeacherHome',
-        component: () => import('@/views/TeacherHome.vue')
+        component: () => import('../views/TeacherHome.vue')
       },
       {
         path: 'courseManagement',
         name: 'CourseManagement',
-        component: () => import('@/views/courseManagement.vue')
+        component: () => import('../views/courseManagement.vue')
       },
       {
         path: 'courseDetail/:id',
         name: 'TeacherCourseDetail',
-        component: () => import('@/views/TeacherCourseDetail.vue')
+        component: () => import('../views/TeacherCourseDetail.vue')
       },
       {
         path: 'courseDetail/:id/students',
@@ -34,32 +34,32 @@ const routes = [
       {
         path: 'homeworkManagement',
         name: 'HomeworkManagement',
-        component: () => import('@/views/homeworkManagement.vue')
+        component: () => import('../views/homeworkManagement.vue')
       },
       {
         path: 'resourceCenter',
         name: 'ResourceCenter',
-        component: () => import('@/views/resourceCenter.vue')
+        component: () => import('../views/resourceCenter.vue')
       },
       {
         path: 'learningAnalysis',
         name: 'LearningAnalysis',
-        component: () => import('@/views/learningAnalysis.vue')
+        component: () => import('../views/learningAnalysis.vue')
       },
       {
         path: 'profile',
         name: 'TeacherProfile',
-        component: () => import('@/views/TeacherProfile.vue')
+        component: () => import('../views/TeacherProfile.vue')
       },
       {
         path: 'questionBank',
         name: 'QuestionBank',
-        component: () => import('@/views/QuestionBank.vue')
+        component: () => import('../views/QuestionBank.vue')
       },
       {
         path: 'questionSelect',
         name: 'QuestionSelect',
-        component: () => import('@/views/QuestionSelect.vue')
+        component: () => import('../views/QuestionSelect.vue')
       }
     ]
   },
@@ -67,22 +67,22 @@ const routes = [
   {
     path: '/student',
     name: 'StudentDashboard',
-    component: () => import('@/views/StudentDashboard.vue'),
+    component: () => import('../views/StudentDashboard.vue'),
     children: [
       {
         path: '',
         name: 'StudentHome',
-        component: () => import('@/views/StudentHome.vue')
+        component: () => import('../views/StudentHome.vue')
       },
       {
         path: 'myCourse',
         name: 'MyCourse',
-        component: () => import('@/views/MyCourse.vue')
+        component: () => import('../views/MyCourse.vue')
       },
       {
         path: 'assignment',
         name: 'Assignment',
-        component: () => import('@/views/Assignment.vue')
+        component: () => import('../views/Assignment.vue')
       },
       {
         path: 'assignment/:id/start',
@@ -92,27 +92,27 @@ const routes = [
       {
         path: 'progress',
         name: 'Progress',
-        component: () => import('@/views/Progress.vue')
+        component: () => import('../views/Progress.vue')
       },
       {
         path: 'knowledgeMap',
         name: 'KnowledgeMap',
-        component: () => import('@/views/KnowledgeMap.vue')
+        component: () => import('../views/KnowledgeMap.vue')
       },
       {
         path: 'learningAnalysis',
         name: 'StudentLearningAnalysis',
-        component: () => import('@/views/learningAnalysis.vue')
+        component: () => import('../views/learningAnalysis.vue')
       },
       {
         path: 'profile',
         name: 'Profile',
-        component: () => import('@/views/Profile.vue')
+        component: () => import('../views/Profile.vue')
       },
       {
         path: 'course/:id',
         name: 'CourseDetail',
-        component: () => import('@/views/CourseDetail.vue')
+        component: () => import('../views/CourseDetail.vue')
       },
       {
         path: 'courseIntro/:id',
@@ -134,7 +134,7 @@ const routes = [
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/ForgotPassword.vue')
+    component: () => import('../views/ForgotPassword.vue')
   }
 ];
 
@@ -145,7 +145,8 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+  let userStr = localStorage.getItem('user')
+  let user = userStr ? JSON.parse(userStr) : null;
   // 公开页面
   const publicPages = ['/', '/login'];
   if (publicPages.includes(to.path)) {
