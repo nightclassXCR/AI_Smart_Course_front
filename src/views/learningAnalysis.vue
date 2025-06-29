@@ -1,248 +1,204 @@
 <template>
-  <div class="learning-analysis">
-  
-    <!-- 学习分析主内容 -->
+  <div class="teacher-analysis">
     <el-main class="main-content">
       <div class="page-title">
-        <h2>学习分析</h2>
+        <h2>成绩分析</h2>
         <div class="actions">
           <el-button type="primary" @click="refreshData">
             <i class="el-icon-refresh"></i> 刷新数据
           </el-button>
-          <el-button type="primary" @click="exportReport">
-            <i class="el-icon-download"></i> 导出报告
-          </el-button>
         </div>
       </div>
-
       <!-- 统计卡片 -->
       <div class="stats-cards">
         <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-title">总学习时长</div>
-            <div class="stat-value">{{ stats.totalStudyTime }}h</div>
-            <div class="stat-trend">+{{ stats.totalStudyTimeTrend }}% 本周</div>
-          </div>
-          <div class="stat-icon"><i class="el-icon-time"></i></div>
+          <div class="stat-title">课程总数</div>
+          <div class="stat-value">{{ stats.courseCount }}</div>
         </el-card>
         <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-title">平均完成率</div>
-            <div class="stat-value">{{ stats.averageCompletionRate }}%</div>
-            <div class="stat-trend">+{{ stats.averageCompletionRateTrend }}% 本月</div>
-          </div>
-          <div class="stat-icon"><i class="el-icon-check"></i></div>
+          <div class="stat-title">学生总数</div>
+          <div class="stat-value">{{ stats.studentCount }}</div>
         </el-card>
         <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-title">活跃学生</div>
-            <div class="stat-value">{{ stats.activeStudents }}</div>
-            <div class="stat-trend">{{ stats.activeStudentRate }}% 参与率</div>
-          </div>
-          <div class="stat-icon"><i class="el-icon-user"></i></div>
-        </el-card>
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-title">优秀率</div>
-            <div class="stat-value">{{ stats.excellentRate }}%</div>
-            <div class="stat-trend">+{{ stats.excellentRateTrend }}% 提升</div>
-          </div>
-          <div class="stat-icon"><i class="el-icon-medal"></i></div>
+          <div class="stat-title">平均分</div>
+          <div class="stat-value">{{ stats.avgScore }}</div>
         </el-card>
       </div>
-
-      <!-- 标签切换 -->
-      <el-tag-group class="filter-tags">
-        <el-tag
-          v-for="(tag, index) in filterTags"
-          :key="index"
-          :type="tag === activeFilter ? 'primary' : ''"
-          @click="handleFilter(tag)"
-        >
-          {{ tag }}
-        </el-tag>
-      </el-tag-group>
-
-      <!-- 科目表现分析 -->
-      <el-card class="subject-analysis" v-if="activeFilter === '学科表现'">
-        <h3>各科目表现分析</h3>
-        <div class="subject-item" v-for="(subject, index) in subjects" :key="index">
-          <div class="subject-info">
-            <span class="subject-name">{{ subject.name }}</span>
-            <span>平均分: {{ subject.averageScore }}</span>
-          </div>
-          <div class="progress-container">
-            <el-progress
-              :percentage="subject.progress"
-              :stroke-width="6"
-              :color="getProgressColor(subject.progress)"
-            />
-            <span class="progress-info">
-              {{ subject.change }} {{ subject.studentCount }} 学生
-            </span>
-          </div>
-        </div>
-      </el-card>
-
-      <!-- 学习模式分析（可扩展） -->
-      <el-card class="mode-analysis" v-if="activeFilter === '学习模式'">
-        <h3>学习模式分析</h3>
-        <p>这里可以展示不同学习模式的数据分析（如线上/线下、自主/辅导等）</p>
-        <!-- 可扩展图表组件 -->
-      </el-card>
-
-      <!-- 进度追踪分析（可扩展） -->
-      <el-card class="tracking-analysis" v-if="activeFilter === '进度追踪'">
-        <h3>进度追踪分析</h3>
-        <p>这里可以展示学生学习进度的追踪数据</p>
-        <!-- 可扩展进度图表 -->
-      </el-card>
-
-      <!-- 智能洞察分析（可扩展） -->
-      <el-card class="insight-analysis" v-if="activeFilter === '智能洞察'">
-        <h3>智能洞察分析</h3>
-        <p>这里可以展示AI驱动的学习洞察建议</p>
-        <!-- 可扩展洞察内容 -->
-      </el-card>
-
-      <el-card class="page-card">
+      <!-- 课程成绩分布表 -->
+      <!-- <el-card class="page-card">
         <div class="page-header">
-          <h2>学习分析</h2>
+          <h2>课程成绩分布</h2>
         </div>
-        <el-table :data="analysisList" style="width: 100%; margin-top: 20px;">
-          <el-table-column prop="subject" label="科目" />
-          <el-table-column prop="score" label="平均分" />
-          <el-table-column prop="rank" label="班级排名" />
-          <el-table-column prop="progress" label="进度">
-            <template #default="scope">
-              <el-progress :percentage="scope.row.progress" :text-inside="true" :stroke-width="18" />
-            </template>
-          </el-table-column>
-          <el-table-column prop="advice" label="学习建议" />
+        <el-table :data="courseStats" style="width: 100%; margin-top: 20px;">
+          <el-table-column prop="name" label="课程名称" />
+          <el-table-column prop="studentCount" label="参与学生数" />
+          <el-table-column prop="avgScore" label="平均分" />
+          <el-table-column prop="maxScore" label="最高分" />
+          <el-table-column prop="minScore" label="最低分" />
+          <el-table-column prop="passRate" label="及格率" />
+          <el-table-column prop="excellentRate" label="优秀率" />
         </el-table>
+      </el-card> -->
+      <!-- 可选：学生成绩明细 -->
+      <!-- <el-card class="page-card">
+        <div class="page-header">
+          <h2>学生成绩明细</h2>
+        </div>
+        <el-table :data="studentStats" style="width: 100%; margin-top: 20px;">
+          <el-table-column prop="studentName" label="学生姓名" />
+          <el-table-column prop="studentId" label="学号" />
+          <el-table-column prop="courseName" label="课程名称" />
+          <el-table-column prop="score" label="分数" />
+          <el-table-column prop="rank" label="排名" />
+          <el-table-column prop="progress" label="进度" />
+          <el-table-column prop="remark" label="备注/建议" />
+        </el-table>
+      </el-card> -->
+      <el-card class="page-card" style="margin-bottom: 24px;">
+        <div class="page-header">
+          <h2>成绩分布图</h2>
+          <el-select v-model="selectedCourse" placeholder="请选择课程" style="width: 200px; margin-left: 20px;" @change="updateChart">
+            <el-option
+              v-for="course in courseList"
+              :key="course.id"
+              :label="course.name"
+              :value="course.id"
+            />
+          </el-select>
+        </div>
+        <div id="score-chart" style="width: 100%; height: 350px;"></div>
       </el-card>
     </el-main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import {
-  ElHeader,
-  ElMain,
-  ElMenu,
-  ElMenuItem,
-  ElInput,
-  ElCard,
-  ElTag,
-  ElProgress,
-  ElTable,
-  ElTableColumn,
-} from 'element-plus';
-import { getAnalysisData, getLearningAnalysis } from '@/api/analysis';
-import { ElMessage } from 'element-plus';
+import { ref, onMounted, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
+import { getCourseByTeacherID } from '@/api/course'
 
 const stats = ref({
-  totalStudyTime: 0,
-  totalStudyTimeTrend: 0,
-  averageCompletionRate: 0,
-  averageCompletionRateTrend: 0,
-  activeStudents: 0,
-  activeStudentRate: 0,
-  excellentRate: 0,
-  excellentRateTrend: 0,
-});
-const filterTags = ref(['学科表现', '学习模式', '进度追踪', '智能洞察']);
-const activeFilter = ref('学科表现');
-const subjects = ref([]);
-const analysisList = ref([]);
+  courseCount: 0,
+  studentCount: 0,
+  avgScore: 0
+})
 
-const fetchAnalysis = async () => {
+const courseStats = ref([])
+const courseList = ref([])
+
+// 成绩分布数据（暂时使用模拟数据，后续可以从后端获取）
+const scoreDistributions = ref({
+  1: [5, 12, 20, 18, 7], // 高等数学
+  2: [2, 10, 15, 22, 11], // 线性代数
+  3: [1, 8, 14, 19, 17]   // 大学英语
+})
+
+const selectedCourse = ref(null)
+let chartInstance = null
+
+// 获取课程统计数据
+const fetchCourseStats = async () => {
   try {
-    const res = await getAnalysisData();
-    if (res.data) {
-      Object.assign(stats.value, res.data.stats || {});
-      subjects.value = res.data.subjects || [];
+    const response = await getCourseByTeacherID()
+    const data = response.data || response
+    
+    if (Array.isArray(data)) {
+      courseStats.value = data.map(course => ({
+        name: course.name,
+        studentCount: course.studentCount || 0,
+        avgScore: course.averageScore ? Math.round(course.averageScore * 10) / 10 : 0,
+        maxScore: course.maxScore || 0,
+        minScore: course.minScore || 0,
+        passRate: course.passRate || '0%',
+        excellentRate: course.excellentRate || '0%'
+      }))
+      
+      // 更新课程列表
+      courseList.value = data.map(course => ({
+        id: course.id,
+        name: course.name
+      }))
+      
+      // 更新统计信息
+      stats.value = {
+        courseCount: data.length,
+        studentCount: data.reduce((sum, course) => sum + (course.studentCount || 0), 0),
+        avgScore: data.length > 0 ? Math.round(data.reduce((sum, course) => sum + (course.averageScore || 0), 0) / data.length * 10) / 10 : 0
+      }
+      
+      // 设置默认选中的课程
+      if (courseList.value.length > 0 && !selectedCourse.value) {
+        selectedCourse.value = courseList.value[0].id
+      }
+      
+      // 更新图表
+      if (chartInstance && selectedCourse.value) {
+        updateChart()
+      }
     }
-    const tableRes = await getLearningAnalysis();
-    analysisList.value = tableRes.data || tableRes || [];
-  } catch (e) {
-    ElMessage.error('获取学习分析数据失败');
+  } catch (error) {
+    console.error('获取课程统计数据失败:', error)
+    ElMessage.error('获取课程统计数据失败')
   }
-};
+}
 
-onMounted(fetchAnalysis);
+const updateChart = () => {
+  if (!chartInstance || !selectedCourse.value) return
+  
+  // 这里可以根据选中的课程从后端获取具体的成绩分布数据
+  // 暂时使用模拟数据
+  const distributionData = scoreDistributions.value[selectedCourse.value] || [0, 0, 0, 0, 0]
+  
+  chartInstance.setOption({
+    title: { 
+      text: `${courseList.value.find(c => c.id === selectedCourse.value)?.name || '课程'}成绩分布` 
+    },
+    series: [{
+      data: distributionData
+    }]
+  })
+}
 
-// 响应式数据
-const activeMenu = ref('analysis');
-
-// 方法：处理菜单选择
-const handleMenuSelect = (index) => {
-  activeMenu.value = index;
-  // 可添加路由跳转逻辑
-  console.log('切换到：', index);
-};
-
-// 方法：处理筛选标签
-const handleFilter = (tag) => {
-  activeFilter.value = tag;
-};
-
-// 方法：刷新数据
 const refreshData = () => {
-  console.log('刷新学习分析数据');
-  // 可添加实际刷新逻辑
-};
+  fetchCourseStats()
+  ElMessage.success('数据已刷新')
+}
 
-// 方法：导出报告
-const exportReport = () => {
-  console.log('导出学习分析报告');
-  // 可添加实际导出逻辑
-};
+onMounted(async () => {
+  // 初始化图表
+  chartInstance = echarts.init(document.getElementById('score-chart'))
+  chartInstance.setOption({
+    title: { text: '成绩分布' },
+    tooltip: {},
+    xAxis: {
+      type: 'category',
+      data: ['<60', '60-70', '70-80', '80-90', '90-100']
+    },
+    yAxis: { type: 'value' },
+    series: [{
+      name: '人数',
+      data: [0, 0, 0, 0, 0],
+      type: 'bar',
+      barWidth: '40%'
+    }]
+  })
+  
+  // 获取数据
+  await fetchCourseStats()
+})
 
-// 辅助方法：获取进度条颜色
-const getProgressColor = (progress) => {
-  if (progress >= 80) return '#67C23A';
-  if (progress >= 60) return '#E6A23C';
-  return '#F56C6C';
-};
+// 监听选中课程变化
+watch(selectedCourse, () => {
+  updateChart()
+})
 </script>
 
 <style scoped>
-.learning-analysis {
-  height: 100vh;
+.teacher-analysis {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.page-header {
-  background-color: #fff;
-  border-bottom: 1px solid #ebeef5;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.logo i {
-  color: #409eff;
-  margin-right: 5px;
-}
-
-.el-menu-demo {
-  border-bottom: none;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
 }
 
 .main-content {
@@ -269,113 +225,40 @@ const getProgressColor = (progress) => {
 }
 
 .stats-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.stat-content {
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 18px 20px 14px 20px;
+  min-width: 180px;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .stat-title {
   font-size: 14px;
   color: #909399;
+  margin-bottom: 8px;
 }
 
 .stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 5px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 4px;
 }
 
-.stat-trend {
-  font-size: 12px;
-  color: #67c23a;
-}
-
-.stat-icon {
-  font-size: 36px;
-  color: #409eff;
-}
-
-.filter-tags {
-  margin-bottom: 20px;
-}
-
-.subject-analysis,
-.mode-analysis,
-.tracking-analysis,
-.insight-analysis {
-  margin-bottom: 20px;
-  padding: 20px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.subject-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.subject-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.subject-name {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.progress-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.progress-info {
-  font-size: 14px;
-  color: #606266;
-}
-
-/* 响应式设计 */
-@media (max-width: 1200px) {
-  .stats-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 10px 20px;
-  }
-
-  .el-menu-demo {
-    margin: 10px 0;
-  }
-
-  .search-bar {
-    margin-top: 10px;
-  }
-
-  .stats-cards {
-    grid-template-columns: 1fr;
-  }
+.desc {
+  color: #888;
+  font-size: 15px;
+  margin-bottom: 12px;
 }
 
 .page-card {

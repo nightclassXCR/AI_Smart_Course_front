@@ -23,6 +23,11 @@ const routes = [
         component: () => import('../views/courseManagement.vue')
       },
       {
+        path: 'courseDetail',
+        name: 'TeacherCourseDetailAdd',
+        component: () => import('../views/TeacherCourseDetail.vue')
+      },
+      {
         path: 'courseDetail/:id',
         name: 'TeacherCourseDetail',
         component: () => import('../views/TeacherCourseDetail.vue')
@@ -83,6 +88,11 @@ const routes = [
         path: 'assignment',
         name: 'Assignment',
         component: () => import('../views/Assignment.vue')
+      },
+      {
+        path: 'assignment/:id/start',
+        name: 'AssignmentAnswer',
+        component: () => import('@/views/AssignmentAnswer.vue')
       },
       {
         path: 'progress',

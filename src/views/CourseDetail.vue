@@ -94,23 +94,64 @@ const groupedConcepts = ref({});
 
 async function fetchCourseDetail() {
   try {
+    console.log('开始获取课程详情，课程ID:', courseId);
+    
     // 获取课程详情
-    const res = await getCourseDetail(courseId);
-    course.value = res.data || {};
+    try {
+      const res = await getCourseDetail(courseId);
+      console.log('课程详情API响应:', res);
+      course.value = res.data || res || {};
+    } catch (e) {
+      console.error('获取课程详情失败:', e);
+      ElMessage.error('获取课程详情失败');
+      return;
+    }
+    
     // 获取章节
-    const chapterRes = await getCourseChapters(courseId);
-    chapters.value = chapterRes.data || [];
+    try {
+      const chapterRes = await getCourseChapters(courseId);
+      console.log('章节API响应:', chapterRes);
+      chapters.value = chapterRes.data || chapterRes || [];
+    } catch (e) {
+      console.error('获取章节失败:', e);
+      ElMessage.error('获取章节信息失败');
+      return;
+    }
+    
     // 获取按章节分组的知识点
-    const conceptRes = await getGroupedConcepts(courseId);
-    groupedConcepts.value = conceptRes.data || {};
+    try {
+      const conceptRes = await getGroupedConcepts(courseId);
+      console.log('分组概念API响应:', conceptRes);
+      groupedConcepts.value = conceptRes.data || conceptRes || {};
+    } catch (e) {
+      console.error('获取知识点失败:', e);
+      ElMessage.error('获取知识点信息失败');
+      return;
+    }
+    
     // 调试打印每个章节下的概念
     Object.keys(groupedConcepts.value).forEach(key => {
       console.log(`章节ID: ${key}，概念数据:`, groupedConcepts.value[key]);
     });
     console.log('groupedConcepts:', groupedConcepts.value);
     console.log('chapters:', chapters.value);
+    console.log('所有数据获取完成');
   } catch (e) {
-    ElMessage.error('获取课程详情失败');
+    console.error('获取课程详情失败，详细错误:', e);
+    console.error('错误响应:', e.response);
+    console.error('错误状态:', e.response?.status);
+    console.error('错误数据:', e.response?.data);
+    
+    // 根据具体错误类型给出更精确的错误提示
+    if (e.response?.status === 404) {
+      ElMessage.error('课程不存在');
+    } else if (e.response?.status === 401) {
+      ElMessage.error('请先登录');
+    } else if (e.response?.status >= 500) {
+      ElMessage.error('服务器错误，请稍后重试');
+    } else {
+      ElMessage.error('获取课程详情失败');
+    }
   }
 }
 

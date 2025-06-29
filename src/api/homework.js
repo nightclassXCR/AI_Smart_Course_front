@@ -162,4 +162,13 @@ export function getMyAssignments() {
     url: '/homework',
     method: 'get'
   });
+}
+
+// 提交作业答案
+export function submitHomeworkAnswer(homeworkId, data) {
+  return request({
+    url: `/homework/submit/${homeworkId}`,
+    method: 'post',
+    data
+  });
 } 

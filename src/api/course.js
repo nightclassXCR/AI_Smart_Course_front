@@ -25,7 +25,7 @@ export function createCourse(data) {
 export function updateCourse(data) {
   return request({
     url: '/courses',
-    method: 'post',
+    method: 'put',
     data
   });
 }
@@ -118,6 +118,20 @@ export function getGroupedConcepts(courseId) {
 export function getCourseByTeacherID(){
   return request({
     url:'/courses/getCourseNameByUserId',
+    method:'get'
+  });
+}
+
+export function getCompleteCourse(){
+  return request({
+    url:'/courses/getMyCompletedCourse',
+    method:'get'
+  });
+}
+
+export function getCourseCountByTeacherId(){
+  return request({
+    url:'/courses/getCourseCountByTeacherId',
     method:'get'
   });
 }

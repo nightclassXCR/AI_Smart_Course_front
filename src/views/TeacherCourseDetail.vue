@@ -10,6 +10,7 @@
     </div>
     <!-- 课程信息编辑区 -->
     <el-card class="info-card">
+
       <el-form :model="course" label-width="80px">
         <el-form-item label="课程名称">
           <el-input v-model="course.name" />
@@ -17,6 +18,12 @@
         <el-form-item label="简介">
           <el-input v-model="course.description" type="textarea" />
         </el-form-item>
+         <el-form-item label="学分">
+          <el-input-number v-model="course.credit" :min="0"></el-input-number>
+         </el-form-item>
+         <el-form-item label="学时">
+          <el-input-number v-model="course.hours" :min="0"></el-input-number>
+         </el-form-item>
       </el-form>
       <el-button type="primary" @click="saveCourse">保存课程信息</el-button>
     </el-card>
@@ -46,23 +53,50 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import { getCourseDetail, updateCourse } from '@/api/course';
+import { getCourseDetail, updateCourse, createCourse } from '@/api/course';
 import { ElMessage } from 'element-plus';
 const route = useRoute();
 const courseId = route.params.id;
-const course = ref({ name: '', teacher: '', desc: '' });
+const course = reactive({
+  name: '',
+  teacher: '',
+  description: '',
+  credit: 0,
+  hours: 0
+});
 const chapters = ref([]);
 
 async function fetchCourseDetail() {
+  if (!courseId) {
+    course.value = { name: '', teacher: '', description: '', credit: 0, hours: 0 };
+    chapters.value = [];
+    return;
+  }
   try {
     const res = await getCourseDetail(courseId);
+    console.log('接口返回:', res.data);
     if (res.data) {
-      course.value = res.data.course || {};
-      chapters.value = res.data.chapters || [];
+      course.name = res.data.name || '';
+      course.teacher = res.data.teacher || '';
+      course.description = res.data.description || '';
+      course.credit = res.data.credit || 0;
+      course.hours = res.data.hours || 0;
+      // 如果有章节数据，按实际接口结构赋值
+      // chapters.value = res.data.chapters || [];
+    } else {
+      course.value = {
+        name: '',
+        teacher: '',
+        description: '',
+        credit: 0,
+        hours: 0
+      };
+      chapters.value = [];
     }
   } catch (e) {
+    console.error('获取课程详情失败', e);
     ElMessage.error('获取课程详情失败');
   }
 }
@@ -98,11 +132,17 @@ function moveChapterDown(idx) {
 }
 async function saveCourse() {
   try {
-    await updateCourse({ id: courseId, ...course.value, chapters: chapters.value });
-    ElMessage.success('课程信息已保存');
-    fetchCourseDetail();
+    if (courseId) {
+      await updateCourse({ id: courseId, ...course, chapters: chapters.value });
+      ElMessage.success('课程信息已保存');
+      fetchCourseDetail();
+    } else {
+      await createCourse({ ...course, chapters: chapters.value });
+      ElMessage.success('课程创建成功');
+      // 可选：跳转回课程管理页
+    }
   } catch (e) {
-    ElMessage.error('保存课程信息失败');
+    ElMessage.error(courseId ? '保存课程信息失败' : '课程创建失败');
   }
 }
 async function saveChapters() {

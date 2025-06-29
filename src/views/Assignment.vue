@@ -4,30 +4,31 @@
       <!-- 主要内容 -->
       <div class="main-content">
         <div class="header">
-          <h1>我的作业</h1>
-          <p>管理你的作业任务，按时完成学习目标</p>
+          <h1>我的任务</h1>
+          <p>管理你的各类学习任务，按时完成目标</p>
         </div>
   
-        <!-- 作业列表 -->
+        <!-- 任务列表 -->
         <div class="assignment-list">
           <div 
-            v-for="assignment in assignments" 
-            :key="assignment.title"
+            v-for="task in assignments" 
+            :key="task.id"
             class="assignment-card"
-            @click="goToAssignment(assignment.id)"
+            @click="goToTask(task)"
             style="cursor:pointer"
           >
             <div class="assignment-header">
-              <h2 class="course-name">{{ assignment.courseName }}</h2>
+              <h2 class="course-name">{{ task.courseName }}</h2>
+              <span class="task-type-tag">{{ getTypeLabel(task.type) }}</span>
             </div>
             <div class="assignment-meta">
               <div class="meta-item">
                 <span class="meta-icon">📝</span>
-                <span>{{ assignment.title }}</span>
+                <span>{{ task.title }}</span>
               </div>
               <div class="meta-item">
                 <span class="meta-icon">📅</span>
-                <span>{{ assignment.deadline ? assignment.deadline : '暂无截止时间' }}</span>
+                <span>{{ task.deadline ? task.deadline : '暂无截止时间' }}</span>
               </div>
             </div>
           </div>
@@ -36,18 +37,18 @@
         <!-- 空状态 -->
         <div v-if="assignments.length === 0" class="empty-state">
           <div class="empty-icon">📝</div>
-          <h3>暂无作业</h3>
-          <p>当前没有作业</p>
+          <h3>暂无任务</h3>
+          <p>当前没有任务</p>
         </div>
       </div>
     </div>
   </template>
   
   <script>
-  import { getMyAssignments,getHomeworkList } from '@/api/homework';
+  import {getHomeworkList } from '@/api/homework';
   
   export default {
-    name: 'AssignmentList',
+    name: 'TaskList',
     data() {
       return {
         assignments: [],
@@ -64,15 +65,37 @@
           const response = await getHomeworkList();
           this.assignments = response.data.assignments || response.data.list || response.data || [];
         } catch (error) {
-          console.error('Failed to load assignments:', error);
-          this.$message.error('加载作业失败');
+          console.error('Failed to load tasks:', error);
+          this.$message.error('加载任务失败');
         } finally {
           this.loading = false;
         }
       },
-      goToAssignment(id) {
-        this.$router.push(`/student/assignments/${id}/start`);
+      goToTask(task) {
+        if (task.type === 'homework') {
+          this.$router.push(`/student/assignment/${task.id}/start`);
+        } else if (task.type === 'reading') {
+          this.$router.push(`/student/reading/${task.id}`);
+        } else if (task.type === 'project') {
+          this.$router.push(`/student/project/${task.id}`);
+        } else if (task.type === 'quiz') {
+          this.$router.push(`/student/quiz/${task.id}`);
+        } else if (task.type === 'exam') {
+          this.$router.push(`/student/exam/${task.id}`);
+        } else {
+          this.$message.warning('暂不支持该类型任务');
+        }
       },
+      getTypeLabel(type) {
+        const map = {
+          homework: '作业',
+          reading: '阅读',
+          project: '项目',
+          quiz: '小测验',
+          exam: '考试'
+        };
+        return map[type] || type;
+      }
     }
   }
   </script>
@@ -217,10 +240,13 @@
     margin-bottom: 4px;
   }
   
-  .teacher-name {
-    font-size: 1rem;
+  .task-type-tag {
+    background: #e3eefe;
     color: #409eff;
-    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 2px 10px;
+    font-size: 13px;
+    margin-left: 8px;
   }
   
   .assignment-meta {
