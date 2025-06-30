@@ -24,7 +24,7 @@
           :key="concept.id" 
           class="concept-tag" 
           :type="currentConceptId === concept.id ? 'primary' : 'info'"
-          @click="handleConceptClick(concept.id)"
+          @click="showConceptDetail(concept.id); handleConceptClick(concept.id)"
           style="cursor: pointer;"
         >
           <i class="el-icon-collection"></i> {{ concept.name }}
@@ -79,8 +79,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getChapterDetail, getConceptsByChapter, getResourcesByChapter } from '@/api/chapter'
+import { getChapterDetail, getConceptsByChapter, getResourcesByChapter, getConceptDetail } from '@/api/chapter'
 import { viewConcept } from '@/api/concept'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -167,7 +168,7 @@ function previewVideo(row) {
 onMounted(async () => {
   // 获取章节详情
   const chapterRes = await getChapterDetail(chapterId)
-  chapter.value = chapterRes.data || {}
+  chapter.value.content = chapterRes.data?.content || chapterRes.data?.description || '暂无简介'
 
   // 获取该章节下的所有概念
   const conceptRes = await getConceptsByChapter(chapterId)
@@ -177,6 +178,21 @@ onMounted(async () => {
   const resourceRes = await getResourcesByChapter(chapterId)
   resources.value = resourceRes.data || []
 })
+
+// 新增方法
+async function showConceptDetail(conceptId) {
+  conceptDetailLoading.value = true
+  conceptDetailDialog.value = true
+  try {
+    const res = await getConceptDetail(conceptId)
+    conceptDetail.value = res.data || {}
+  } catch (e) {
+    ElMessage.error('获取概念详情失败')
+    conceptDetail.value = {}
+  } finally {
+    conceptDetailLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -249,5 +265,30 @@ onMounted(async () => {
   background: #409EFF;
   color: #fff;
   box-shadow: 0 4px 16px rgba(64,158,255,0.15);
+}
+.concept-detail-content {
+  font-size: 16px;
+  color: #333;
+  padding: 8px 0;
+}
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.detail-label {
+  min-width: 80px;
+  color: #409EFF;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+.detail-label i {
+  margin-right: 4px;
+}
+.detail-value {
+  flex: 1;
+  color: #222;
+  word-break: break-all;
 }
 </style> 

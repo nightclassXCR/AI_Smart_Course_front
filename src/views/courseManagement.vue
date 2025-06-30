@@ -18,7 +18,7 @@
         <el-table-column prop="hours" label="学时"/>
         <el-table-column label="操作">
           <template #default="scope">
-            <el-button
+            &nbsp&nbsp&nbsp<el-button
               size="small"
               type="primary"
               round
