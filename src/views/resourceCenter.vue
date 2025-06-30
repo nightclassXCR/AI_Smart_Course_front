@@ -56,9 +56,12 @@
             <el-option label="视频" value="video" />
           </el-select>
         </el-form-item>
+        <el-form-item label="资源所属">
+          <el-input v-model="uploadForm.ownerName" placeholder="请输入资源所属" />
+        </el-form-item>
         <el-form-item label="所属类型">
           <el-select v-model="uploadForm.ownerType" placeholder="请选择类型">
-            <el-option label="课程" value="task" />
+            <el-option label="任务" value="task" />
             <el-option label="问题" value="question" />
             <el-option label="概念" value="concept" />
           </el-select>
@@ -93,7 +96,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 
 const resourceList = ref([]);
 const showUpload = ref(false);
-const uploadForm = ref({ name: '', ownerType: '', fileType: '', fileUrl: null });
+const uploadForm = ref({ name: '', ownerType: '',ownerName: '', fileType: '', fileUrl: null });
 const uploadRef = ref(null);
 const loading = ref(false);
 
@@ -107,7 +110,7 @@ const resourceTypeMap = {
 }
 
 const resourceOwnerTypeMap = {
-  task: '课程',
+  task: '任务',
   question: '问题',
   concept: '概念'
 }
@@ -166,6 +169,7 @@ async function submitUpload() {
     formData.append('type', uploadForm.value.fileType);
     formData.append('file', uploadForm.value.fileUrl);
     formData.append('ownerType', uploadForm.value.ownerType);
+    formData.append('ownerName', uploadForm.value.ownerName);
     await createResource(formData);
     ElMessage.success('资源上传成功！');
     closeUploadDialog();
