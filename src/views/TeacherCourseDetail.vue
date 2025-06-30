@@ -40,10 +40,15 @@
         </div>
         <div class="concept-list">
           <div class="concept-title">知识点：</div>
-          <div v-for="(concept, kIdx) in conceptsMap[chapter.id] || []" :key="concept.id || kIdx" class="concept-item">
-            <el-input v-model="concept.name" size="small" style="width: 180px; margin-right:8px;" @blur="handleUpdateConcept(concept)" />
-            <el-button type="danger" size="small" @click="handleDeleteConcept(concept.id)">删除</el-button>
-          </div>
+          <el-tag
+            v-for="concept in conceptsMap[chapter.id] || []"
+            :key="concept.id"
+            @click="showConceptDetail(concept.id)"
+            style="cursor:pointer;margin-right:8px;margin-bottom:8px;"
+            type="info"
+          >
+            {{ concept.name }}
+          </el-tag>
           <el-button type="success" size="small" @click="showAddConceptDialog(chapter.id)">新增知识点</el-button>
         </div>
         <div v-if="showNewConceptInput[chapter.id]" style="margin: 8px 0; display: flex; align-items: center;">
@@ -73,6 +78,19 @@
         <el-button type="primary" :loading="addConceptLoading" @click="submitAddConcept">提交</el-button>
       </template>
     </el-dialog>
+    <el-dialog v-model="conceptDetailDialog" title="概念详情" width="400px">
+      <div v-if="conceptDetailLoading" style="text-align:center;">
+        <el-icon><Loading /></el-icon>
+      </div>
+      <div v-else>
+        <div><b>名称：</b>{{ conceptDetail.name }}</div>
+        <div><b>描述：</b>{{ conceptDetail.description || '暂无描述' }}</div>
+        <div><b>资源ID：</b>{{ conceptDetail.resourceId || '无' }}</div>
+      </div>
+      <template #footer>
+        <el-button @click="conceptDetailDialog = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -82,6 +100,7 @@ import { useRoute } from 'vue-router';
 import { getCourseDetail, updateCourse, createCourse, getCourseChapters, getGroupedConcepts } from '@/api/course';
 import { ElMessage } from 'element-plus';
 import { addConcept, updateConcept, deleteConcept, deleteChapter, addChapter } from '@/api/chapter';
+import { getConceptDetail } from '@/api/chapter';
 const route = useRoute();
 const courseId = route.params.id;
 const course = reactive({
@@ -100,6 +119,9 @@ const showNewChapterInput = ref(false);
 const addConceptDialog = ref(false);
 const addConceptForm = ref({ chapterId: null, name: '', description: '', resourceId: '' });
 const addConceptLoading = ref(false);
+const conceptDetailDialog = ref(false);
+const conceptDetail = ref({});
+const conceptDetailLoading = ref(false);
 
 const isCourseValid = computed(() => {
   return !!course.name && !!course.description && !!course.credit && !!course.hours;
@@ -315,6 +337,21 @@ async function submitAddConcept() {
     ElMessage.error('新增知识点失败');
   } finally {
     addConceptLoading.value = false;
+  }
+}
+
+async function showConceptDetail(conceptId) {
+  console.log('即将请求概念详情，conceptId:', conceptId, `URL: /concepts/${conceptId}`);
+  conceptDetailLoading.value = true;
+  conceptDetailDialog.value = true;
+  try {
+    const res = await getConceptDetail(conceptId);
+    conceptDetail.value = res.data || {};
+  } catch (e) {
+    ElMessage.error('获取概念详情失败');
+    conceptDetail.value = {};
+  } finally {
+    conceptDetailLoading.value = false;
   }
 }
 </script>

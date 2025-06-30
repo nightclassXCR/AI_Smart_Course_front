@@ -2,7 +2,7 @@ import request from './request'
 
 export function getChapterDetail(chapterId) {
   return request({
-    url: `/chapters/${chapterId}`,
+    url: `/chapters/${chapterId}/content`,
     method: 'get'
   })
 }
@@ -54,5 +54,13 @@ export function addChapter(chapterDto) {
     url: '/chapters',
     method: 'post',
     data: chapterDto
+  });
+}
+
+// 获取概念详情
+export function getConceptDetail(id) {
+  return request({
+    url: `/concepts/${id}`,
+    method: 'get'
   });
 } 

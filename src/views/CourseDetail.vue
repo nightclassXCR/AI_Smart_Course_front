@@ -47,6 +47,8 @@
               :key="concept.id"
               class="concept-tag"
               :type="getTagType(concept.importance)"
+              @click="showConceptDetail(concept.id)"
+              style="cursor:pointer;"
             >
               <i class="el-icon-collection"></i> {{ concept.name }}
             </el-tag>
@@ -76,6 +78,20 @@
         <el-button type="primary" @click="askAI">提问</el-button>
       </div>
     </div>
+    <!-- 知识点详情弹窗 -->
+    <el-dialog v-model="conceptDetailDialog" title="知识点详情" width="400px">
+      <div v-if="conceptDetailLoading" style="text-align:center;">
+        <el-icon><Loading /></el-icon>
+      </div>
+      <div v-else>
+        <div><b>名称：</b>{{ conceptDetail.name }}</div>
+        <div><b>描述：</b>{{ conceptDetail.description || '暂无描述' }}</div>
+        <div><b>资源ID：</b>{{ conceptDetail.resourceId || '无' }}</div>
+      </div>
+      <template #footer>
+        <el-button @click="conceptDetailDialog = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -204,6 +220,20 @@ function getTagType(importance) {
   if (importance === 'medium') return 'warning'; // 橙色
   if (importance === 'low') return 'success';   // 绿色
   return 'info'; // 默认蓝色
+}
+
+async function showConceptDetail(conceptId) {
+  conceptDetailLoading.value = true;
+  conceptDetailDialog.value = true;
+  try {
+    const res = await getConceptDetail(conceptId);
+    conceptDetail.value = res.data || {};
+  } catch (e) {
+    ElMessage.error('获取知识点详情失败');
+    conceptDetail.value = {};
+  } finally {
+    conceptDetailLoading.value = false;
+  }
 }
 </script>
 

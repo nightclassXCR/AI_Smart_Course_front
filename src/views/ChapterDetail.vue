@@ -24,7 +24,7 @@
           :key="concept.id" 
           class="concept-tag" 
           :type="currentConceptId === concept.id ? 'primary' : 'info'"
-          @click="handleConceptClick(concept.id)"
+          @click="showConceptDetail(concept.id); handleConceptClick(concept.id)"
           style="cursor: pointer;"
         >
           <i class="el-icon-collection"></i> {{ concept.name }}
@@ -41,14 +41,39 @@
       </div>
       <div v-else class="empty-state">暂无资源</div>
     </el-card>
+    <el-dialog v-model="conceptDetailDialog" title="概念详情" width="420px">
+      <div v-if="conceptDetailLoading" style="text-align:center; padding: 30px 0;">
+        <el-icon><Loading /></el-icon>
+      </div>
+      <div v-else class="concept-detail-content">
+        <div class="detail-row">
+          <span class="detail-label"><i class="el-icon-collection"></i> 名称：</span>
+          <span class="detail-value">{{ conceptDetail.name }}</span>
+        </div>
+        <el-divider />
+        <div class="detail-row">
+          <span class="detail-label"><i class="el-icon-document"></i> 描述：</span>
+          <span class="detail-value">{{ conceptDetail.description || '暂无描述' }}</span>
+        </div>
+        <el-divider />
+        <div class="detail-row">
+          <span class="detail-label"><i class="el-icon-link"></i> 资源ID：</span>
+          <span class="detail-value">{{ conceptDetail.resourceId || '无' }}</span>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="conceptDetailDialog = false" type="primary" plain>关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getChapterDetail, getConceptsByChapter, getResourcesByChapter } from '@/api/chapter'
+import { getChapterDetail, getConceptsByChapter, getResourcesByChapter, getConceptDetail } from '@/api/chapter'
 import { viewConcept } from '@/api/concept'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -61,6 +86,11 @@ const resources = ref([])
 const pageEnterTime = ref(Date.now())
 // 记录当前查看的概念ID
 const currentConceptId = ref(null)
+
+// 新增响应式变量
+const conceptDetailDialog = ref(false)
+const conceptDetail = ref({})
+const conceptDetailLoading = ref(false)
 
 // 处理概念点击 - 记录开始查看某个概念
 const handleConceptClick = async (conceptId) => {
@@ -102,7 +132,7 @@ onUnmounted(async () => {
 onMounted(async () => {
   // 获取章节详情
   const chapterRes = await getChapterDetail(chapterId)
-  chapter.value = chapterRes.data || {}
+  chapter.value.content = chapterRes.data?.content || chapterRes.data?.description || '暂无简介'
 
   // 获取该章节下的所有概念
   const conceptRes = await getConceptsByChapter(chapterId)
@@ -112,6 +142,21 @@ onMounted(async () => {
   const resourceRes = await getResourcesByChapter(chapterId)
   resources.value = resourceRes.data || []
 })
+
+// 新增方法
+async function showConceptDetail(conceptId) {
+  conceptDetailLoading.value = true
+  conceptDetailDialog.value = true
+  try {
+    const res = await getConceptDetail(conceptId)
+    conceptDetail.value = res.data || {}
+  } catch (e) {
+    ElMessage.error('获取概念详情失败')
+    conceptDetail.value = {}
+  } finally {
+    conceptDetailLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -184,5 +229,30 @@ onMounted(async () => {
   background: #409EFF;
   color: #fff;
   box-shadow: 0 4px 16px rgba(64,158,255,0.15);
+}
+.concept-detail-content {
+  font-size: 16px;
+  color: #333;
+  padding: 8px 0;
+}
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.detail-label {
+  min-width: 80px;
+  color: #409EFF;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+.detail-label i {
+  margin-right: 4px;
+}
+.detail-value {
+  flex: 1;
+  color: #222;
+  word-break: break-all;
 }
 </style> 
