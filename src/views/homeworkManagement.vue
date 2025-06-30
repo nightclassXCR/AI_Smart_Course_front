@@ -44,8 +44,19 @@
         <el-form-item label="作业标题">
           <el-input v-model="form.title" />
         </el-form-item>
-        <el-form-item label="所属课程">
-          <el-input v-model="form.courseName" />
+        <el-form-item label="所属课程" prop="courseId">
+          <el-select
+            v-model="form.courseId"
+            placeholder="请选择课程"
+            @change="handleCourseChange"
+          >
+            <el-option
+              v-for="item in courseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="任务类型">
           <el-select v-model="form.type" placeholder="请选择类型">
@@ -100,15 +111,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { getHomeworkList, createHomework, updateHomework, deleteHomework } from '@/api/homework';
+import { getAllCourses } from '@/api/course';
 import { ElMessage } from 'element-plus';
 const homeworkList = ref([]);
 const showAdd = ref(false);
-const form = ref({ title: '',courseName:'', status:'', type:'', courseId: '', deadline: '', questions: [] });
+const form = reactive({
+  title: '',
+  courseName: '',
+  status: '',
+  type: '',
+  courseId: '',
+  deadline: '',
+  questions: []
+});
 const editId = ref(null);
 const showQuestionDialog = ref(false);
 const loading = ref(false);
+const courseOptions = ref([]);
 
 const typeMap = {
   reading: '阅读',
@@ -136,12 +157,24 @@ const fetchHomework = async () => {
     loading.value = false;
   }
 };
-
 onMounted(fetchHomework);
+onMounted(async () => {
+  // 假设 getCourseList 返回 [{ id: 1, name: '数学' }, ...]
+  const res = await getAllCourses()
+  courseOptions.value = res.data.map(item => ({
+    value: item.id,
+    label: item.name
+  }))
+})
 
 function editHomework(row) {
-  form.value = { ...row };
-  if (!form.value.questions) form.value.questions = [];
+  form.title = row.title;
+  form.courseName = row.courseName;
+  form.status = row.status;
+  form.type = row.type;
+  form.courseId = row.courseId;
+  form.deadline = row.deadline;
+  if (!form.questions) form.questions = [];
   editId.value = row.id;
   showAdd.value = true;
 }
@@ -150,10 +183,10 @@ async function saveHomework() {
   loading.value = true;
   try {
     if (editId.value) {
-      await updateHomework({ id: editId.value, ...form.value });
+      await updateHomework({ id: editId.value, ...form });
       ElMessage.success('作业更新成功');
     } else {
-      await createHomework(form.value);
+      await createHomework(form);
       ElMessage.success('作业创建成功');
     }
     showAdd.value = false;
@@ -180,8 +213,13 @@ async function deleteHomeworkHandler(id) {
 }
 
 function onQuestionSelected(selectedQuestions) {
-  form.value.questions = selectedQuestions;
+  form.questions = selectedQuestions;
   showQuestionDialog.value = false;
+}
+
+function handleCourseChange(value) {
+  const selected = courseOptions.value.find(item => item.value === value)
+  form.courseName = selected ? selected.label : ''
 }
 </script>
 
