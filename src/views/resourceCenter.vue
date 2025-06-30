@@ -100,6 +100,7 @@ const uploadForm = ref({ name: '', ownerType: '',ownerName: '', fileType: '', fi
 const uploadRef = ref(null);
 const loading = ref(false);
 
+
 const resourceTypeMap = {
   video: '视频',
   document: '文档',
@@ -123,7 +124,7 @@ const fetchResources = async () => {
     resourceList.value = res.data?.list || res.data || [];
  
   } catch (e) {
-    ElMessage.error('获取资源列表失败');
+    ElMessage.error('获取资源失败');
   } finally {
     loading.value = false;
   }
@@ -193,6 +194,7 @@ function downloadResource(row) {
   } else {
     ElMessage.info('该资源没有有效的下载链接。');
     console.warn('资源没有下载URL:', row);
+
   }
 }
 
