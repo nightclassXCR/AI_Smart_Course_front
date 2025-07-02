@@ -14,7 +14,24 @@
       <el-table :data="homeworkList" style="width: 100%; margin-top: 10px; border-radius: 10px;" :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}">
         <el-table-column prop="title" label="作业标题" />
         <el-table-column prop="courseName" label="所属课程" />
+        <el-table-column prop="type" label="作业类型">
+          <template #default="scope">
+            {{ typeMap[scope.row.type] }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="作业状态">
+          <template #default="scope">
+            {{ statusMap[scope.row.status] }}
+          </template>
+        </el-table-column>
         <el-table-column prop="deadline" label="截止日期" />
+        <el-table-column prop="difficulty" label="难度" width="100">
+          <template #default="scope">
+            <el-tag :type="getDifficultyType(scope.row.difficulty)" size="small">
+              {{ getDifficultyText(scope.row.difficulty) }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
           <template #default="scope">
             <el-button size="small" @click="editHomework(scope.row)">编辑</el-button>
@@ -37,20 +54,61 @@
         <el-form-item label="所属课程">
           <el-input v-model="form.courseName" />
         </el-form-item>
+        <el-form-item label="任务类型">
+          <el-select v-model="form.type" placeholder="请选择类型">
+            <el-option label="阅读" value="read" />
+            <el-option label="作业" value="homework" />
+            <el-option label="项目" value="project" />
+            <el-option label="测试" value="quiz" />
+            <el-option label="考试" value="exam" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="任务状态">
+          <el-select v-model="form.status" placeholder="请选择类型">
+            <el-option label="草稿" value="draft" />
+            <el-option label="已发布" value="published" />
+            <el-option label="已完成" value="completed" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="截止日期">
-          <el-input v-model="form.deadline" />
+          <el-date-picker
+              v-model="form.deadline"
+              type="datetime"
+              placeholder="选择截止日期和时间"
+              format="YYYY-MM-DD HH:mm"
+              value-format="YYYY-MM-DD HH:mm"
+          />
         </el-form-item>
       </el-form>
       <div style="margin: 10px 0;">
-        <el-button type="primary" @click="showQuestionDialog = true">选择题目</el-button>
+        <el-button type="primary" @click="goToQuestionSelect">选择题目</el-button>
       </div>
       <div v-if="form.questions && form.questions.length">
-        <div style="font-weight:bold;margin-bottom:4px;">已选题目：</div>
+        <div style="font-weight:bold;margin-bottom:8px;">已选题目：</div>
         <el-table :data="form.questions" size="small" style="width:100%;">
-          <el-table-column prop="content" label="题目内容" />
-          <el-table-column label="正确答案">
+          <el-table-column prop="question_id" label="题目ID" width="80" />
+          <el-table-column prop="content" Nameslabel="题目内容" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="conceptNames" label="知识点" width="100">
             <template #default="scope">
-              <span>{{ scope.row.options[scope.row.answer] }}</span>
+              <el-tag size="small" type="info">{{ scope.row.concept || '-' }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="difficulty" label="难度" width="100">
+            <template #default="scope">
+              <el-tag :type="getWeightType(scope.row.weight)" size="small">
+                {{ getWeightText(scope.row.weight) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="point" label="分值" width="80">
+            <template #default="scope">
+              <span>{{ scope.row.point || 5 }}分</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="答案" min-width="120">
+            <template #default="scope">
+              <span v-if="Array.isArray(scope.row.answer)">{{ scope.row.answer.map(i => String.fromCharCode(65+i)).join('，') }}</span>
+              <span v-else>{{ String.fromCharCode(65 + scope.row.answer) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -60,29 +118,58 @@
         <el-button type="primary" @click="saveHomework">保存</el-button>
       </template>
     </el-dialog>
-    <!-- 题库选择弹窗 -->
-    <el-dialog v-model="showQuestionDialog" title="选择题目" width="600px" :visible="false" />
-    <!-- 题库选择弹窗已废弃，改为跳转新页面 -->
-    <router-view v-if="showQuestionDialog" @question-selected="onQuestionSelected" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { getHomeworkList, createHomework, updateHomework, deleteHomework } from '@/api/homework';
 import { ElMessage } from 'element-plus';
+
+const router = useRouter();
 const homeworkList = ref([]);
 const showAdd = ref(false);
-const form = ref({ title: '',courseName:'', courseId: '', deadline: '', questions: [] });
+const form = ref({ title: '',courseName:'', status:'', type:'', courseId: '', deadline: '', questions: [] });
 const editId = ref(null);
-const showQuestionDialog = ref(false);
 const loading = ref(false);
+
+const typeMap = {
+  reading: '阅读',
+  homework: '作业',
+  project: '项目',
+  quiz: '小测',
+  exam: '考试'
+}
+
+const statusMap = {
+  draft: '草稿',
+  published: '已发布',
+  completed: '已完成'
+}
+
+// 工具函数
+const getWeightText = (weight) => {
+  return weight==='low'?'低':weight==='medium'?'中':'高';
+};
+
+const getWeightType = (weight) => {
+  return weight==='low'?'info':weight==='medium'?'warning':'danger';
+};
+
+const getDifficultyText = (difficulty) => {
+  return difficulty==='easy'?'简单':difficulty==='medium'?'中等':'困难';
+};
+
+const getDifficultyType = (difficulty) => {
+  return difficulty==='easy'?'success':difficulty==='medium'?'warning':'danger';
+};
 
 const fetchHomework = async () => {
   loading.value = true;
   try {
     const res = await getHomeworkList();
-    
+
     homeworkList.value = res.data?.list || res.data || [];
   } catch (e) {
     ElMessage.error('获取作业列表失败');
@@ -90,8 +177,6 @@ const fetchHomework = async () => {
     loading.value = false;
   }
 };
-
-onMounted(fetchHomework);
 
 function editHomework(row) {
   form.value = { ...row };
@@ -133,10 +218,29 @@ async function deleteHomeworkHandler(id) {
   }
 }
 
-function onQuestionSelected(selectedQuestions) {
-  form.value.questions = selectedQuestions;
-  showQuestionDialog.value = false;
+function goToQuestionSelect() {
+  // 将当前表单数据存储到localStorage，以便在问题选择页面使用
+  localStorage.setItem('homeworkFormData', JSON.stringify(form.value));
+  // 跳转到问题选择页面
+  router.push('/teacher/questionSelect');
 }
+
+// 监听页面显示事件，处理从问题选择页面返回的数据
+onMounted(() => {
+  fetchHomework();
+
+  // 检查是否有从问题选择页面返回的数据
+  const storedFormData = localStorage.getItem('homeworkFormData');
+  if (storedFormData) {
+    const parsedData = JSON.parse(storedFormData);
+    // 恢复表单数据，包括已选择的题目
+    form.value = { ...form.value, ...parsedData };
+    if (parsedData.questions && parsedData.questions.length > 0) {
+      ElMessage.success(`已选择 ${parsedData.questions.length} 道题目`);
+    }
+    localStorage.removeItem('homeworkFormData');
+  }
+});
 </script>
 
 <style scoped>
