@@ -34,13 +34,38 @@
     </el-card>
     <el-card class="resource-card">
       <h3>包含的资源</h3>
-      <div v-if="resources.length" class="resource-list">
-        <el-link v-for="resource in resources" :key="resource.id" :href="resource.url || '#'" target="_blank" class="resource-link">
-          <i class="el-icon-link"></i> {{ resource.title }}
-        </el-link>
-      </div>
+      <el-table
+        v-if="resources.length"
+        :data="resources"
+        style="width: 100%; margin-top: 10px; border-radius: 10px;"
+        :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}"
+      >
+        <el-table-column prop="name" label="资源名称" />
+        <el-table-column prop="fileType" label="类型">
+          <template #default="scope">
+            {{ resourceTypeMap[scope.row.fileType] }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="ownerType" label="所属类型">
+          <template #default="scope">
+            {{ resourceOwnerTypeMap[scope.row.ownerType] }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="updatedAt" label="上传时间" />
+        <el-table-column label="操作">
+          <template #default="scope">
+            <el-button
+              v-if="scope.row.fileType === 'video'"
+              size="small"
+              @click="previewVideo(scope.row)"
+            >预览</el-button>
+            <el-button size="small" @click="downloadResource(scope.row)">下载</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <div v-else class="empty-state">暂无资源</div>
     </el-card>
+
     <el-dialog v-model="conceptDetailDialog" title="概念详情" width="420px">
       <div v-if="conceptDetailLoading" style="text-align:center; padding: 30px 0;">
         <el-icon><Loading /></el-icon>
@@ -64,6 +89,15 @@
       <template #footer>
         <el-button @click="conceptDetailDialog = false" type="primary" plain>关闭</el-button>
       </template>
+    </el-dialog>  
+    <el-dialog v-model="showVideoDialog" title="视频预览" width="600px">
+      <video
+        v-if="currentVideoUrl"
+        :src="currentVideoUrl"
+        controls
+        style="width: 100%; max-height: 400px;"
+      ></video>
+
     </el-dialog>
   </div>
 </template>
@@ -87,10 +121,22 @@ const pageEnterTime = ref(Date.now())
 // 记录当前查看的概念ID
 const currentConceptId = ref(null)
 
-// 新增响应式变量
-const conceptDetailDialog = ref(false)
-const conceptDetail = ref({})
-const conceptDetailLoading = ref(false)
+const resourceTypeMap = {
+  video: '视频',
+  document: '文档',
+  image: '图片',
+  ppt: 'ppt',
+  doc: 'doc',
+  pdf: 'pdf'
+}
+const resourceOwnerTypeMap = {
+  task: '任务',
+  question: '问题',
+  concept: '概念'
+}
+
+const showVideoDialog = ref(false)
+const currentVideoUrl = ref('')
 
 // 处理概念点击 - 记录开始查看某个概念
 const handleConceptClick = async (conceptId) => {
@@ -128,6 +174,22 @@ onUnmounted(async () => {
     await recordConceptDuration(currentConceptId.value)
   }
 })
+
+function downloadResource(row) {
+  if (row.fileUrl) {
+    const a = document.createElement('a');
+    a.href = row.fileUrl;
+    a.download = row.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+}
+
+function previewVideo(row) {
+  currentVideoUrl.value = row.fileUrl
+  showVideoDialog.value = true
+}
 
 onMounted(async () => {
   // 获取章节详情

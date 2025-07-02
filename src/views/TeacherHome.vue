@@ -84,7 +84,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getCourseByTeacherID, getCourseCountByTeacherId } from '@/api/course';
+import { getCourseByTeacherID, getCourseCountByTeacherId,getTaskCountByTeacherId } from '@/api/course';
 import { ElMessage } from 'element-plus';
 const router = useRouter();
 const props = defineProps(['userInfo', 'stats', 'courses', 'pendingTasks']);
@@ -113,9 +113,18 @@ async function fetchCoursesCount() {
   }
 }
 
+async function fetchTaskCount() {
+    try{
+      const res = await getTaskCountByTeacherId();
+      stats.value.completedTasks = res.data || 0;
+    }catch(e){
+      ElMessage.error('获取任务数失败');
+    }
+}
 onMounted(async () => {
   await fetchCourses();
   await fetchCoursesCount();
+  await fetchTaskCount();
 });
 
 function viewDetail(course) {

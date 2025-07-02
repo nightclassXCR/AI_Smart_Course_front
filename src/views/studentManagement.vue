@@ -21,44 +21,102 @@
         <p>该课程下还没有学生</p>
       </div>
     </el-card>
+
+    <!-- 查看学生详情弹窗 -->
+    <el-dialog v-model="showStudentDetails" :title="学生详情" width="500px">
+      <el-form :model="form" label-width="80px">
+        <el-form-item label="学生ID">
+          <el-input v-model="form.userID" disabled />
+        </el-form-item>
+        <el-form-item label="学生姓名">
+          <el-input v-model="form.name" disabled />
+        </el-form-item>
+        <el-form-item label="邮箱地址">
+          <el-input v-model="form.email" disabled />
+        </el-form-item>
+        <el-form-item label="电话号码">
+          <el-input v-model="form.phoneNumber" disabled />
+        </el-form-item>
+        <el-form-item label="学生状态">
+          <el-input v-model="form.status" disabled />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button type="primary" @click="quitStudentDetails">确定</el-button>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-// import { getStudentsByCourseId } from '@/api/student'; // 你需要实现该API
+import { getStudentsByCourseId, deleteStudentByCourseId } from '@/api/course'; // 你需要实现该API
 import { ElMessage } from 'element-plus';
 
 const route = useRoute();
 const router = useRouter();
 const courseId = route.params.id || route.params.courseId;
 const studentList = ref([]);
-
-const fetchStudents = async () => {
-  // const res = await getStudentsByCourseId(courseId);
-  // studentList.value = res.data || [];
-  // 临时mock数据
-  studentList.value = [
-    { name: '张三', studentId: '2023001' },
-    { name: '李四', studentId: '2023002' }
-  ];
+const showStudentDetails = ref(false);
+const form = reactive({
+  userID: '',
+  name: '',
+  email: '',
+  phoneNumber: '',
+  status: ''
+});
+const fetchStudents = async (courseId) => {
+  try{
+    const res = await getStudentsByCourseId(courseId)
+    studentList.value = res.data
+  }catch(e){
+    console.error('获取学生名单失败：',e)
+    studentList.value = []
+  }
 };
 
-onMounted(fetchStudents);
+onMounted(() => {
+  console.log('courseId的值：', courseId); 
+  fetchStudents(courseId);
+});
+
 
 function goBack() {
   router.back();
 }
 
-function removeStudent(row) {
-  ElMessage.success(`已移除学生：${row.name}`);
-  studentList.value = studentList.value.filter(s => s.studentId !== row.studentId);
+async function removeStudent(row) {
+  var isDeleted = false;
+  try{
+    const res = await deleteStudentByCourseId(courseId, row.id)
+    isDeleted = res.data
+  }catch(e){
+    console.error('移除学生失败：',e)
+    ElMessage.error('移除学生失败');
+    return
+  }
+  if(!isDeleted){
+    console.error('移除学生失败：',e)
+    ElMessage.error('移除学生失败');
+  }else{
+    ElMessage.success(`已移除学生：${row.name}`);
+    studentList.value = studentList.value.filter(s => s.studentId !== row.studentId);
+  }
 }
 
 function viewStudentDetail(row) {
-  ElMessage.info(`查看学生：${row.name}`);
-  // router.push(`/student/profile/${row.studentId}`)
+  form.userID = row.id;
+  form.name = row.name;
+  form.email = row.email;
+  form.phoneNumber = row.phoneNumber;
+  form.status = row.status;
+  showStudentDetails.value = true;
+}
+
+function quitStudentDetails() {
+  showStudentDetails.value = false;
 }
 </script>
 

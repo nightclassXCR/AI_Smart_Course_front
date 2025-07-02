@@ -14,7 +14,7 @@ export function getConceptsByChapter(chapterId) {
 }
 export function getResourcesByChapter(chapterId) {
   return request({
-    url: `/chapters/${chapterId}/resources`,
+    url: `/resource/chapter/${chapterId}`,
     method: 'get'
   })
 }
