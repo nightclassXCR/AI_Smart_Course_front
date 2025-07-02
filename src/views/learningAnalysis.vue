@@ -21,7 +21,7 @@
         </el-card>
         <el-card class="stat-card">
           <div class="stat-title">平均分</div>
-          <div class="stat-value">{{ stats.avgScore }}</div>
+          <div class="stat-value">{{ currentAvgScore }}</div>
         </el-card>
       </div>
       <!-- 课程成绩分布表 -->
@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
 import { getCourseByTeacherID } from '@/api/course'
@@ -97,6 +97,12 @@ const scoreDistributions = ref({
 const selectedCourse = ref(null)
 let chartInstance = null
 
+const currentAvgScore = computed(() => {
+  if (!selectedCourse.value) return 0
+  const course = courseStats.value.find(c => c.id === selectedCourse.value || c.name === selectedCourse.value)
+  return course ? course.avgScore : 0
+})
+
 // 获取课程统计数据
 const fetchCourseStats = async () => {
   try {
@@ -105,6 +111,7 @@ const fetchCourseStats = async () => {
     
     if (Array.isArray(data)) {
       courseStats.value = data.map(course => ({
+        id: course.id,
         name: course.name,
         studentCount: course.studentCount || 0,
         avgScore: course.averageScore ? Math.round(course.averageScore * 10) / 10 : 0,

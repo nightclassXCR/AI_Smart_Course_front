@@ -64,7 +64,7 @@
         <div class="stat-icon"><i class="el-icon-trophy"></i></div>
         <div class="stat-content">
           <h3>平均分数</h3>
-          <div class="stat-value">{{ stats.averageScore }}</div>
+          <div class="stat-value">{{ averageScore }}</div>
 
         </div>
       </div>
@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCompleteCourse, enrollCourse, getNotMyCourse, getMyCourses } from '@/api/course'
 import { ElMessage } from 'element-plus'
@@ -140,12 +140,22 @@ const attrs = useAttrs()
 const props = defineProps(['userInfo', 'stats', 'courses', 'assignments', 'recentActivities', 'allCourses'])
 
 const userInfo = ref(props.userInfo || {})
-const stats = ref(props.stats || {})
 const courses = ref([])
 const assignments = ref([])
 const recentActivities = ref(props.recentActivities || [])
 const allCourses = ref([])
 const recommendList = ref([])
+
+const stats = ref(props.stats || {})
+
+// 计算所有课程的平均分数
+const averageScore = computed(() => {
+  if (!allCourses.value.length) return 0;
+  // 只统计有 averageScore 字段的课程
+  const scores = allCourses.value.map(c => Number(c.averageScore)).filter(s => !isNaN(s));
+  if (!scores.length) return 0;
+  return Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length * 10) / 10;
+}); 
 
 async function fetchAllCourses() {
   try {
