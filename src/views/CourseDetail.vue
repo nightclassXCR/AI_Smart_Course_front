@@ -62,20 +62,17 @@
     <div class="qa-card">
       <div class="qa-header">
         <span class="qa-title">智能问答</span>
-        <span class="qa-desc">有疑问？试试向AI提问吧！</span>
+        <span class="qa-desc">有疑问？试试向AI提问吧！（请在subject中输入对应科目名称）</span>
       </div>
       <div class="qa-list">
         <div v-for="(item, idx) in qaList" :key="idx" class="qa-item" :class="item.role">
-          <div class="qa-bubble">
-            <span v-if="item.role==='user'">🙋‍♂️</span>
-            <span v-else>🤖</span>
-            <span class="qa-text">{{ item.text }}</span>
-          </div>
         </div>
-      </div>
-      <div class="qa-input-row">
-        <input v-model="question" @keyup.enter="askAI" placeholder="请输入你的问题..." />
-        <el-button type="primary" @click="askAI">提问</el-button>
+        <iframe
+          src="http://localhost/chatbot/kjhnHn7iI1cGSAPB"
+          style="width: 100%; height: 100%; min-height: 700px"
+          frameborder="0"
+ allow="microphone">
+</iframe>
       </div>
     </div>
     <!-- 知识点详情弹窗 -->
@@ -86,7 +83,7 @@
       <div v-else>
         <div><b>名称：</b>{{ conceptDetail.name }}</div>
         <div><b>描述：</b>{{ conceptDetail.description || '暂无描述' }}</div>
-        <div><b>资源ID：</b>{{ conceptDetail.resourceId || '无' }}</div>
+        <!-- <div><b>资源ID：</b>{{ conceptDetail.resourceId || '无' }}</div> -->
       </div>
       <template #footer>
         <el-button @click="conceptDetailDialog = false">关闭</el-button>
@@ -355,13 +352,16 @@ async function showConceptDetail(conceptId) {
   font-size: 13px;
 }
 .qa-list {
-  min-height: 60px;
-  max-height: 220px;
-  overflow-y: auto;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  height: 950px;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+}
+.qa-list iframe {
+  width: 100%;
+  height: 900px;
+  border: none;
+  display: block;
 }
 .qa-item.user .qa-bubble {
   background: #eaf6ff;

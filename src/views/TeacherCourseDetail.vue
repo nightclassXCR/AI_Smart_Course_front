@@ -69,9 +69,9 @@
         <el-form-item label="描述">
           <el-input v-model="addConceptForm.description" placeholder="请输入描述" />
         </el-form-item>
-        <el-form-item label="资源ID">
+        <!-- <el-form-item label="资源ID">
           <el-input v-model="addConceptForm.resourceId" placeholder="请输入资源ID" />
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <el-button @click="addConceptDialog = false">取消</el-button>
@@ -85,7 +85,7 @@
       <div v-else>
         <div><b>名称：</b>{{ conceptDetail.name }}</div>
         <div><b>描述：</b>{{ conceptDetail.description || '暂无描述' }}</div>
-        <div><b>资源ID：</b>{{ conceptDetail.resourceId || '无' }}</div>
+        <!-- <div><b>资源ID：</b>{{ conceptDetail.resourceId || '无' }}</div> -->
       </div>
       <template #footer>
         <el-button @click="conceptDetailDialog = false">关闭</el-button>
@@ -99,7 +99,7 @@ import { ref, onMounted, reactive, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { getCourseDetail, updateCourse, createCourse, getCourseChapters, getGroupedConcepts } from '@/api/course';
 import { ElMessage } from 'element-plus';
-import { addConcept, updateConcept, deleteConcept, deleteChapter, addChapter } from '@/api/chapter';
+import { addConcept, updateConcept, deleteConcept, deleteChapter, addChapter, moveChapterUp as moveChapterUpApi, moveChapterDown as moveChapterDownApi, reorderChapters } from '@/api/chapter';
 import { getConceptDetail } from '@/api/chapter';
 const route = useRoute();
 const courseId = route.params.id;
@@ -198,20 +198,28 @@ function removeChapter(idx) {
   chapters.value.splice(idx, 1);
 }
 
-function moveChapterUp(idx) {
-  if (idx > 0) {
-    const temp = chapters.value[idx-1];
-    chapters.value[idx-1] = chapters.value[idx];
-    chapters.value[idx] = temp;
-  }
+async function moveChapterUp(cIdx) {
+  if (cIdx === 0) return;
+  // 1. 交换前端数组顺序
+  const temp = chapters.value[cIdx - 1];
+  chapters.value[cIdx - 1] = chapters.value[cIdx];
+  chapters.value[cIdx] = temp;
+  // 2. 提取新顺序的ID数组
+  const orderedChapterIds = chapters.value.map(ch => ch.id);
+  // 3. 调用后端接口
+  await reorderChapters(courseId, orderedChapterIds);
+  // 4. 可选：刷新章节列表
+  await fetchChaptersAndConcepts();
 }
 
-function moveChapterDown(idx) {
-  if (idx < chapters.value.length-1) {
-    const temp = chapters.value[idx+1];
-    chapters.value[idx+1] = chapters.value[idx];
-    chapters.value[idx] = temp;
-  }
+async function moveChapterDown(cIdx) {
+  if (cIdx === chapters.value.length - 1) return;
+  const temp = chapters.value[cIdx + 1];
+  chapters.value[cIdx + 1] = chapters.value[cIdx];
+  chapters.value[cIdx] = temp;
+  const orderedChapterIds = chapters.value.map(ch => ch.id);
+  await reorderChapters(courseId, orderedChapterIds);
+  await fetchChaptersAndConcepts();
 }
 
 async function saveCourse() {

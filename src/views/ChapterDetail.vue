@@ -56,10 +56,10 @@
           <span class="detail-value">{{ conceptDetail.description || '暂无描述' }}</span>
         </div>
         <el-divider />
-        <div class="detail-row">
+        <!-- <div class="detail-row">
           <span class="detail-label"><i class="el-icon-link"></i> 资源ID：</span>
           <span class="detail-value">{{ conceptDetail.resourceId || '无' }}</span>
-        </div>
+        </div> -->
       </div>
       <template #footer>
         <el-button @click="conceptDetailDialog = false" type="primary" plain>关闭</el-button>
