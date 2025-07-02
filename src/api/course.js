@@ -12,6 +12,7 @@ export function getCourseList(teacherId) {
   });
 }
 
+
 // 新建课程
 export function createCourse(data) {
   return request({
@@ -136,4 +137,9 @@ export function getCourseCountByTeacherId(){
   });
 }
 
-
+export function getTaskCountByTeacherId(){
+  return request({
+    url:`/homework/count`,
+    method:'get'
+  });
+}
