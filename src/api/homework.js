@@ -9,6 +9,7 @@ export function getHomeworkList(params) {
   });
 }
 
+
 // 新建作业
 export function createHomework(data) {
   return request({
@@ -161,5 +162,14 @@ export function getMyAssignments() {
   return request({
     url: '/homework',
     method: 'get'
+  });
+}
+
+// 提交作业答案
+export function submitHomeworkAnswer(homeworkId, data) {
+  return request({
+    url: `/homework/submit/${homeworkId}`,
+    method: 'post',
+    data
   });
 } 

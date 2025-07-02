@@ -7,10 +7,10 @@ export function getCourseList(teacherId) {
   return request({
     url: `/courses/byTeacher/${teacherId}`,
     method: 'get',
-    params
 
   });
 }
+
 
 // 新建课程
 export function createCourse(data) {
@@ -25,7 +25,7 @@ export function createCourse(data) {
 export function updateCourse(data) {
   return request({
     url: '/courses',
-    method: 'post',
+    method: 'put',
     data
   });
 }
@@ -112,5 +112,53 @@ export function getGroupedConcepts(courseId) {
   return request({
     url: `/courses/groupedConcepts/${courseId}`,
     method: 'get'
+  });
+}
+
+export function getCourseByTeacherID(){
+  return request({
+    url:'/courses/getCourseNameByUserId',
+    method:'get'
+  });
+}
+
+export function getCompleteCourse(){
+  return request({
+    url:'/courses/getMyCompletedCourse',
+    method:'get'
+  });
+}
+
+export function getCourseCountByTeacherId(){
+  return request({
+    url:'/courses/getCourseCountByTeacherId',
+    method:'get'
+  });
+}
+
+
+// 获取某门课程下的学生名单
+export function getStudentsByCourseId(courseId){
+  return request({
+    url: `/courses/getStudentsByCourseId/${courseId}`,
+    method: 'get'
+  });
+}
+
+// 删除某门课程下的学生
+export function deleteStudentByCourseId(courseId,userId){
+  return request({
+    url: `/courses/deleteStudentByCourseId/${courseId}`,
+    method: 'delete',
+    params: {
+      userId
+    }
+  });
+}
+
+export function getTaskCountByTeacherId(){
+  return request({
+    url:`/homework/count`,
+    method:'get'
   });
 }

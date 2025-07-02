@@ -17,7 +17,7 @@
         <div class="stat-content">
           <h3>总学生数</h3>
           <div class="stat-value">{{ stats.totalStudents }}</div>
-          <div class="stat-change positive">+{{ stats.newStudents }} 本月新增</div>
+ 
         </div>
       </div>
       <div class="stat-card">
@@ -25,23 +25,16 @@
         <div class="stat-content">
           <h3>运行课程</h3>
           <div class="stat-value">{{ stats.activeCourses }}</div>
-          <div class="stat-change positive">+{{ stats.newCourses }} 本月新增</div>
+
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon"><i class="el-icon-data-line"></i></div>
-        <div class="stat-content">
-          <h3>平均学习进度</h3>
-          <div class="stat-value">{{ stats.averageProgress }}%</div>
-          <div class="stat-change positive">+{{ stats.progressChange }}% 较上月</div>
-        </div>
-      </div>
+   
       <div class="stat-card">
         <div class="stat-icon"><i class="el-icon-document-checked"></i></div>
         <div class="stat-content">
-          <h3>完成任务</h3>
+          <h3>发布任务</h3>
           <div class="stat-value">{{ stats.completedTasks }}</div>
-          <div class="stat-change positive">+{{ stats.taskIncrease }} 本月新增</div>
+
         </div>
       </div>
     </div>
@@ -54,7 +47,7 @@
       <div v-if="courses && courses.length" class="module-list">
         <div v-for="course in courses" :key="course.id" class="course-item">
           <div class="item-title">{{ course.name }}</div>
-          <div class="item-meta">{{ course.students }}名学生 | 平均分{{ course.averageScore }} | 进度{{ course.progress }}%</div>
+          <div class="item-meta">{{ course.studentCount }}名学生 | 平均分{{ course.averageScore }}</div>
           <!-- <el-progress :percentage="course.progress" :stroke-width="10" /> -->
           <div class="item-actions">
             <el-button size="small" @click="viewDetail(course)">详情</el-button>
@@ -65,7 +58,7 @@
       <div v-else class="empty-module">暂无课程</div>
     </div>
     <!-- 待处理任务模块 -->
-    <div class="module-card">
+    <!-- <div class="module-card">
       <div class="module-header">
         <span class="module-title">待处理任务</span>
         <el-button type="text" @click="$router.push('/teacher/homeworkManagement')">查看全部</el-button>
@@ -84,29 +77,55 @@
         </div>
       </div>
       <div v-else class="empty-module">暂无待处理任务</div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getCourseList } from '@/api/course';
+import { getCourseByTeacherID, getCourseCountByTeacherId,getTaskCountByTeacherId } from '@/api/course';
 import { ElMessage } from 'element-plus';
 const router = useRouter();
 const props = defineProps(['userInfo', 'stats', 'courses', 'pendingTasks']);
 const courses = ref([]);
+const stats = ref({
+  activeCourses: 0,
+  totalStudents: 0,
+  completedTasks: 0
+});
 
 async function fetchCourses() {
   try {
-    const res = await getCourseList();
+    const res = await getCourseByTeacherID();
     courses.value = res.data?.list || res.data || [];
   } catch (e) {
     ElMessage.error('获取课程列表失败');
   }
 }
 
-onMounted(fetchCourses);
+async function fetchCoursesCount() {
+  try{
+    const res = await getCourseCountByTeacherId();
+    stats.value.activeCourses = res.data || 0;
+  }catch(e){
+    ElMessage.error('获取课程数失败');
+  }
+}
+
+async function fetchTaskCount() {
+    try{
+      const res = await getTaskCountByTeacherId();
+      stats.value.completedTasks = res.data || 0;
+    }catch(e){
+      ElMessage.error('获取任务数失败');
+    }
+}
+onMounted(async () => {
+  await fetchCourses();
+  await fetchCoursesCount();
+  await fetchTaskCount();
+});
 
 function viewDetail(course) {
   router.push(`/teacher/courseManagement?id=${course.id}`);

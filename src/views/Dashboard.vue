@@ -8,7 +8,7 @@
       <div class="nav-menu">
         <router-link to="/teacher" class="nav-item">首页</router-link>
         <router-link to="/teacher/courseManagement" class="nav-item">课程管理</router-link>
-        <router-link to="/teacher/studentManagement" class="nav-item">学生管理</router-link>
+        <!-- <router-link to="/teacher/studentManagement" class="nav-item">学生管理</router-link> -->
         <router-link to="/teacher/homeworkManagement" class="nav-item">作业管理</router-link>
         <router-link to="/teacher/resourceCenter" class="nav-item">资源中心</router-link>
         <router-link to="/teacher/learningAnalysis" class="nav-item">学习分析</router-link>
@@ -39,10 +39,7 @@ export default {
   name: 'TeacherDashboard',
   data() {
     return {
-      userInfo: {
-        name: '李教授',
-        avatar: ''
-      },
+      userInfo: {},
       stats: {
         totalStudents: 320,
         newStudents: 8,
@@ -100,6 +97,25 @@ export default {
           priority: 'medium'
         }
       ]
+    }
+  },
+  mounted() {
+    // 从localStorage获取用户信息
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        console.log('当前用户信息:', user); // 调试用
+        this.userInfo = {
+          name: user.name || user.username || user.realName || '老师',
+          avatar: user.avatar || user.avatarUrl || ''
+        };
+      } catch (e) {
+        console.error('解析用户信息失败:', e);
+        this.userInfo = { name: '老师', avatar: '' };
+      }
+    } else {
+      this.userInfo = { name: '老师', avatar: '' };
     }
   },
   methods: {

@@ -17,8 +17,16 @@
         :header-cell-style="{background:'#f5f7fa',color:'#409EFF',fontWeight:'bold'}"
       >
         <el-table-column prop="name" label="资源名称" />
-        <el-table-column prop="fileType" label="类型" />
-        <el-table-column prop="size" label="大小" />
+        <el-table-column prop="fileType" label="类型">
+          <template #default="scope">
+            {{ resourceTypeMap[scope.row.fileType] }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="ownerType" label="所属类型">
+          <template #default="scope">
+            {{ resourceOwnerTypeMap[scope.row.ownerType] }}
+          </template>
+        </el-table-column>
         <el-table-column prop="updatedAt" label="上传时间" />
         <el-table-column label="操作">
           <template #default="scope">
@@ -39,12 +47,23 @@
         <el-form-item label="资源名称">
           <el-input v-model="uploadForm.name" placeholder="请输入资源名称" />
         </el-form-item>
-        <el-form-item label="类型">
+        <el-form-item label="文件类型">
           <el-select v-model="uploadForm.fileType" placeholder="请选择类型">
-            <el-option label="文档" value="pdf" />
+            <el-option label="doc文档" value="doc" />
+            <el-option label="pdf文档" value="pdf" />
+            <el-option label="ppt文档" value="ppt" />
             <el-option label="图片" value="image" />
             <el-option label="视频" value="video" />
-            <el-option label="其他" value="doc" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="资源所属">
+          <el-input v-model="uploadForm.ownerName" placeholder="请输入资源所属" />
+        </el-form-item>
+        <el-form-item label="所属类型">
+          <el-select v-model="uploadForm.ownerType" placeholder="请选择类型">
+            <el-option label="任务" value="task" />
+            <el-option label="问题" value="question" />
+            <el-option label="概念" value="concept" />
           </el-select>
         </el-form-item>
         <el-form-item label="文件">
@@ -77,9 +96,25 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 
 const resourceList = ref([]);
 const showUpload = ref(false);
-const uploadForm = ref({ name: '', fileType: '', fileUrl: null });
+const uploadForm = ref({ name: '', ownerType: '',ownerName: '', fileType: '', fileUrl: null });
 const uploadRef = ref(null);
 const loading = ref(false);
+
+
+const resourceTypeMap = {
+  video: '视频',
+  document: '文档',
+  image: '图片',
+  ppt: 'ppt',
+  doc: 'doc',
+  pdf: 'pdf'
+}
+
+const resourceOwnerTypeMap = {
+  task: '任务',
+  question: '问题',
+  concept: '概念'
+}
 
 const fetchResources = async () => {
   loading.value = true;
@@ -89,7 +124,7 @@ const fetchResources = async () => {
     resourceList.value = res.data?.list || res.data || [];
  
   } catch (e) {
-    ElMessage.error('获取资源列表失败');
+    ElMessage.error('获取资源失败');
   } finally {
     loading.value = false;
   }
@@ -122,12 +157,20 @@ async function submitUpload() {
     ElMessage.error('请选择要上传的文件');
     return;
   }
+  if (!uploadForm.value.ownerType) {
+    ElMessage.error('请选择资源所属类型');
+    return;
+  }
+  
+
   loading.value = true;
   try {
     const formData = new FormData();
     formData.append('name', uploadForm.value.name);
     formData.append('type', uploadForm.value.fileType);
     formData.append('file', uploadForm.value.fileUrl);
+    formData.append('ownerType', uploadForm.value.ownerType);
+    formData.append('ownerName', uploadForm.value.ownerName);
     await createResource(formData);
     ElMessage.success('资源上传成功！');
     closeUploadDialog();
@@ -151,6 +194,7 @@ function downloadResource(row) {
   } else {
     ElMessage.info('该资源没有有效的下载链接。');
     console.warn('资源没有下载URL:', row);
+
   }
 }
 
