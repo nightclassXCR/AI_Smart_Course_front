@@ -65,6 +65,31 @@
       </el-table>
       <div v-else class="empty-state">暂无资源</div>
     </el-card>
+
+    <el-dialog v-model="conceptDetailDialog" title="概念详情" width="420px">
+      <div v-if="conceptDetailLoading" style="text-align:center; padding: 30px 0;">
+        <el-icon><Loading /></el-icon>
+      </div>
+      <div v-else class="concept-detail-content">
+        <div class="detail-row">
+          <span class="detail-label"><i class="el-icon-collection"></i> 名称：</span>
+          <span class="detail-value">{{ conceptDetail.name }}</span>
+        </div>
+        <el-divider />
+        <div class="detail-row">
+          <span class="detail-label"><i class="el-icon-document"></i> 描述：</span>
+          <span class="detail-value">{{ conceptDetail.description || '暂无描述' }}</span>
+        </div>
+        <el-divider />
+        <!-- <div class="detail-row">
+          <span class="detail-label"><i class="el-icon-link"></i> 资源ID：</span>
+          <span class="detail-value">{{ conceptDetail.resourceId || '无' }}</span>
+        </div> -->
+      </div>
+      <template #footer>
+        <el-button @click="conceptDetailDialog = false" type="primary" plain>关闭</el-button>
+      </template>
+    </el-dialog>  
     <el-dialog v-model="showVideoDialog" title="视频预览" width="600px">
       <video
         v-if="currentVideoUrl"
@@ -72,6 +97,7 @@
         controls
         style="width: 100%; max-height: 400px;"
       ></video>
+
     </el-dialog>
   </div>
 </template>

@@ -161,7 +161,9 @@ async function fetchAllCourses() {
   try {
     const res = await getNotMyCourse()
     allCourses.value = res.data?.list || res.data || []
-    recommendList.value = allCourses.value.slice(0, 3)
+    // 随机选取3门课程
+    const shuffled = allCourses.value.slice().sort(() => 0.5 - Math.random())
+    recommendList.value = shuffled.slice(0, 3)
   } catch (e) {
     ElMessage.error('获取课程列表失败')
   }
