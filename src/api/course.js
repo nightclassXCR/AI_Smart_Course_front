@@ -7,7 +7,6 @@ export function getCourseList(teacherId) {
   return request({
     url: `/courses/byTeacher/${teacherId}`,
     method: 'get',
-    params
 
   });
 }
@@ -134,6 +133,26 @@ export function getCourseCountByTeacherId(){
   return request({
     url:'/courses/getCourseCountByTeacherId',
     method:'get'
+  });
+}
+
+
+// 获取某门课程下的学生名单
+export function getStudentsByCourseId(courseId){
+  return request({
+    url: `/courses/getStudentsByCourseId/${courseId}`,
+    method: 'get'
+  });
+}
+
+// 删除某门课程下的学生
+export function deleteStudentByCourseId(courseId,userId){
+  return request({
+    url: `/courses/deleteStudentByCourseId/${courseId}`,
+    method: 'delete',
+    params: {
+      userId
+    }
   });
 }
 
