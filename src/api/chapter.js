@@ -51,3 +51,4 @@ export function getConceptDetail(conceptId) {
     method: 'get'
   });
 }
+

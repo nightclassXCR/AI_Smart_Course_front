@@ -141,21 +141,22 @@ const props = defineProps(['userInfo', 'stats', 'courses', 'assignments', 'recen
 
 const userInfo = ref(props.userInfo || {})
 const courses = ref([])
+
 const assignments = ref([])
 const recentActivities = ref(props.recentActivities || [])
 const allCourses = ref([])
 const recommendList = ref([])
+const courseLists = ref([])
 
 const stats = ref(props.stats || {})
 
-// 计算所有课程的平均分数
 const averageScore = computed(() => {
-  if (!allCourses.value.length) return 0;
-  // 只统计有 averageScore 字段的课程
-  const scores = allCourses.value.map(c => Number(c.averageScore)).filter(s => !isNaN(s));
-  if (!scores.length) return 0;
-  return Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length * 10) / 10;
-}); 
+  if (!courseLists.value.length) return 0
+  const scores = courseLists.value.map(c => Number(c.averageScore)).filter(s => !isNaN(s))
+  console.log('参与平均分计算的分数:', scores)
+  if (!scores.length) return 0
+  return Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length * 10) / 10
+})
 
 async function fetchAllCourses() {
   try {
@@ -261,7 +262,7 @@ async function fetchCourseLearningProgress() {
         }
       })
     )
-    
+    courseLists.value = coursesWithProgress
     courses.value = coursesWithProgress.slice(0, 2)
   } catch (e) {
     ElMessage.error('获取我的课程失败')
@@ -277,7 +278,8 @@ onMounted(async () => {
   await fetchCourseLearningProgress()
   
   // 其他初始化逻辑
-  fetchAllCourses()
+  await fetchAllCourses()
+  console.log('allCourses:', allCourses.value)
   getAssignments()
 })
 

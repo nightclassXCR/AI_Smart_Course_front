@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getChapterDetail, getConceptsByChapter, getResourcesByChapter, getConceptDetail } from '@/api/chapter'
 import { viewConcept } from '@/api/concept'
@@ -115,6 +115,12 @@ const chapterId = route.params.id
 const chapter = ref({})
 const concepts = ref([])
 const resources = ref([])
+const conceptDetailLoading = ref(false);
+const conceptDetailDialog = ref(false);
+const conceptDetail = reactive({ 
+  name: '', 
+  description: '' 
+});
 
 // 记录页面进入时间
 const pageEnterTime = ref(Date.now())
@@ -211,7 +217,9 @@ async function showConceptDetail(conceptId) {
   conceptDetailDialog.value = true
   try {
     const res = await getConceptDetail(conceptId)
-    conceptDetail.value = res.data || {}
+    console.log('conceptDetail', res.data)
+    conceptDetail.name = res.data.name || ''
+    conceptDetail.description = res.data.description || ''
   } catch (e) {
     ElMessage.error('获取概念详情失败')
     conceptDetail.value = {}
