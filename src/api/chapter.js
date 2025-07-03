@@ -47,7 +47,7 @@ export function reorderChapters(courseId, orderedChapterIds) {
 
 export function getConceptDetail(conceptId) {
   return request({
-    url: `/concepts/groupedConcepts/${conceptId}`,
+    url: `/concepts/${conceptId}`,
     method: 'get'
   })
 }
