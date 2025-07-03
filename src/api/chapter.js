@@ -44,3 +44,10 @@ export function reorderChapters(courseId, orderedChapterIds) {
     }
   });
 }
+
+export function getConceptDetail(conceptId) {
+  return request({
+    url: `/concepts/${conceptId}`,
+    method: 'get'
+  });
+}
