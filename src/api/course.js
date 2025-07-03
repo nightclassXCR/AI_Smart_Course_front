@@ -131,7 +131,7 @@ export function getCompleteCourse(){
 
 export function getCourseCountByTeacherId(){
   return request({
-    url:'/courses/getCourseCountByTeacherId',
+    url:'/courses/',
     method:'get'
   });
 }
