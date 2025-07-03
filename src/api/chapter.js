@@ -49,6 +49,6 @@ export function getConceptDetail(conceptId) {
   return request({
     url: `/concepts/${conceptId}`,
     method: 'get'
-  })
+  });
 }
 

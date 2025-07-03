@@ -69,7 +69,7 @@
         <div v-for="(item, idx) in qaList" :key="idx" class="qa-item" :class="item.role">
         </div>
         <iframe
-          src="http://localhost/chatbot/kjhnHn7iI1cGSAPB"
+          src="http://82.157.104.71/chatbot/ywgzgGIp2VyajGwv"
           style="width: 100%; height: 100%; min-height: 700px"
           frameborder="0"
  allow="microphone">
