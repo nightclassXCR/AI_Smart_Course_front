@@ -96,18 +96,30 @@ const stats = ref({
 async function fetchCourses() {
   try {
     const res = await getCourseByTeacherID();
+    //res.data.list 存在，那么res.data?.list 返回 res.data.list（一个数组），最后由于数组是真值，直接赋值给 courses.value
     courses.value = res.data?.list || res.data || [];
   } catch (e) {
     ElMessage.error('获取课程列表失败');
   }
-}
-
-async function fetchCoursesCount() {
-  try{
-    const res = await getCourseCountByTeacherId();
-    stats.value.activeCourses = res.data || 0;
-  }catch(e){
-    ElMessage.error('获取课程数失败');
+  try {
+    // 更新stats.totalStudents
+    // 用for...in：遍历对象的属性名（如配置对象、JSON 数据）
+    // 用for...of：遍历可迭代对象的值（如数组、字符串、Set、Map
+    for(let course of courses.value){
+      //在 JavaScript 中：必须使用.value访问 ref 的值
+      //在 Vue 模板中：可以直接访问，无需.value
+      stats.value.totalStudents += course.studentCount;
+    }
+  } catch (e) {
+    console.error('更新总学生数失败:', e);
+    ElMessage.error('更新总学生数失败');
+  }
+  try {
+    // 更新stats.activeCourses
+    stats.value.activeCourses = courses.value.length;
+  } catch (e) {
+    console.error('更新运行课程数失败:', e);
+    ElMessage.error('更新运行课程数失败');
   }
 }
 
@@ -116,12 +128,14 @@ async function fetchTaskCount() {
       const res = await getTaskCountByTeacherId();
       stats.value.completedTasks = res.data || 0;
     }catch(e){
+      console.error('获取任务数失败:', e);
       ElMessage.error('获取任务数失败');
     }
 }
+
+
 onMounted(async () => {
   await fetchCourses();
-  await fetchCoursesCount();
   await fetchTaskCount();
 });
 
