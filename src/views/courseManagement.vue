@@ -202,7 +202,7 @@ function goToAdd() {
 }
 @media (max-width: 600px) {
   .course-mgmt-container {
-    max-width: 100vw;
+    max-width: 100%;
     margin: 10px 0;
     padding: 10px 2vw;
   }

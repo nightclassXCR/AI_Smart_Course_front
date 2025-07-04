@@ -1,24 +1,26 @@
 <template>
-  <el-card class="page-card">
-    <div class="home-header">
-      <h1>欢迎来到AI智慧课程平台</h1>
-      <p>让学习更智能，让成长更高效</p>
-    </div>
-    <div class="quick-links">
-      <el-button type="primary" size="large" @click="$router.push('/login')">立即登录</el-button>
-      <el-button size="large" @click="$router.push('/student')">学生端预览</el-button>
-      <el-button size="large" @click="$router.push('/teacher')">教师端预览</el-button>
-    </div>
-    <el-divider />
-    <div class="platform-intro">
-      <h3>平台简介</h3>
-      <ul>
-        <li>课程管理、作业管理、学生管理一站式完成</li>
-        <li>资源中心、知识图谱、学习分析助力高效成长</li>
-        <li>支持教师与学生双端，界面美观统一</li>
-      </ul>
-    </div>
-  </el-card>
+  <div class="main-content">
+    <el-card class="page-card">
+      <div class="home-header">
+        <h1>欢迎来到AI智慧课程平台</h1>
+        <p>让学习更智能，让成长更高效</p>
+      </div>
+      <div class="quick-links">
+        <el-button type="primary" size="large" @click="$router.push('/login')">立即登录</el-button>
+        <el-button size="large" @click="$router.push('/student')">学生端预览</el-button>
+        <el-button size="large" @click="$router.push('/teacher')">教师端预览</el-button>
+      </div>
+      <el-divider />
+      <div class="platform-intro">
+        <h3>平台简介</h3>
+        <ul>
+          <li>课程管理、作业管理、学生管理一站式完成</li>
+          <li>资源中心、知识图谱、学习分析助力高效成长</li>
+          <li>支持教师与学生双端，界面美观统一</li>
+        </ul>
+      </div>
+    </el-card>
+  </div>
 </template>
 
 <script>
@@ -185,7 +187,7 @@ export default {
 <style scoped>
 .page-card {
   max-width: 800px;
-  margin: 60px auto;
+  margin: 40px auto;
   padding: 40px 30px;
   text-align: center;
 }

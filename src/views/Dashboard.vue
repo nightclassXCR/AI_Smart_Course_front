@@ -144,7 +144,14 @@ export default {
   height: 60px;
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
+  width: 100vw;
+  left: 0;
+  right: 0;
+  position: relative;
+  margin: 0;
   padding: 0 32px;
+  box-sizing: border-box;
+  min-width: 1200px;
 }
 .nav-brand .logo {
   font-size: 20px;
@@ -199,16 +206,18 @@ export default {
   color: #fff;
 }
 .main-content {
-  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 60vh;
+  width: 100%;
+  box-sizing: border-box;
   padding: 20px;
+  background-color: #f5f7fa;
+  overflow-y: auto;
 }
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column;
-    height: auto;
+    width: 100%;
+    max-width: 100%;
     padding: 8px 8px;
   }
   .nav-menu {
@@ -230,7 +239,7 @@ export default {
 .course-mgmt-container,
 .student-mgmt-container,
 .progress-container {
-  width: 100vw;
+  width: 100%;
   max-width: 1400px;
   margin: 32px auto;
 }

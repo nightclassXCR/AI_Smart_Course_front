@@ -225,7 +225,7 @@ function getEmptyMessage() {
 }
 @media (max-width: 900px) {
   .progress-container {
-    max-width: 100vw;
+    max-width: 100%;
     padding: 10px 2vw;
   }
   .progress-card {

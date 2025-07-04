@@ -398,7 +398,7 @@ async function showConceptDetail(conceptId) {
 }
 @media (max-width: 600px) {
   .course-detail-container {
-    max-width: 100vw;
+    max-width: 100%;
     padding: 10px 2vw;
   }
 }
