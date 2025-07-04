@@ -54,6 +54,8 @@
           <el-table-column prop="remark" label="备注/建议" />
         </el-table>
       </el-card> -->
+
+      <!-- 课程成绩分布图 -->
       <el-card class="page-card" style="margin-bottom: 24px;">
         <div class="page-header">
           <h2>成绩分布图</h2>
@@ -68,6 +70,7 @@
         </div>
         <div id="score-chart" style="width: 100%; height: 350px;"></div>
       </el-card>
+
     </el-main>
   </div>
 </template>
@@ -77,6 +80,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
 import { getCourseByTeacherID } from '@/api/course'
+import { getScoreDistribution } from '@/api/score'
 
 const stats = ref({
   courseCount: 0,
@@ -86,13 +90,6 @@ const stats = ref({
 
 const courseStats = ref([])
 const courseList = ref([])
-
-// 成绩分布数据（暂时使用模拟数据，后续可以从后端获取）
-const scoreDistributions = ref({
-  1: [5, 12, 20, 18, 7], // 高等数学
-  2: [2, 10, 15, 22, 11], // 线性代数
-  3: [1, 8, 14, 19, 17]   // 大学英语
-})
 
 const selectedCourse = ref(null)
 let chartInstance = null
@@ -150,21 +147,33 @@ const fetchCourseStats = async () => {
   }
 }
 
-const updateChart = () => {
+const updateChart = async () => {
   if (!chartInstance || !selectedCourse.value) return
   
   // 这里可以根据选中的课程从后端获取具体的成绩分布数据
   // 暂时使用模拟数据
-  const distributionData = scoreDistributions.value[selectedCourse.value] || [0, 0, 0, 0, 0]
+  console.log('更新图表数据:', selectedCourse.value)
+  try{
+    const res = await getScoreDistribution(selectedCourse.value)
+    const distributionData = res.data || [0, 0, 0, 0, 0]
+    for(let percentage in distributionData){
+
+    }
+    console.log('成绩分布数据:', distributionData)
+      
+    chartInstance.setOption({
+      title: { 
+        text: `${courseList.value.find(c => c.id === selectedCourse.value)?.name || '课程'}成绩分布（百分比）` 
+      },
+      series: [{
+        data: distributionData
+      }]
+    })
+  } catch (error) {
+    console.error('获取课程成绩分布数据失败:', error)
+    ElMessage.error('获取课程成绩分布数据失败')
+  }
   
-  chartInstance.setOption({
-    title: { 
-      text: `${courseList.value.find(c => c.id === selectedCourse.value)?.name || '课程'}成绩分布` 
-    },
-    series: [{
-      data: distributionData
-    }]
-  })
 }
 
 const refreshData = () => {
@@ -176,7 +185,7 @@ onMounted(async () => {
   // 初始化图表
   chartInstance = echarts.init(document.getElementById('score-chart'))
   chartInstance.setOption({
-    title: { text: '成绩分布' },
+    title: { text: '成绩分布(百分比)' },
     tooltip: {},
     xAxis: {
       type: 'category',
@@ -269,9 +278,7 @@ watch(selectedCourse, () => {
 }
 
 .page-card {
-  max-width: 900px;
   width: 100%;
-  margin: 40px auto;
   padding: 30px 20px;
   box-sizing: border-box;
 }
@@ -290,7 +297,7 @@ watch(selectedCourse, () => {
 
 @media (max-width: 600px) {
   .page-card {
-    max-width: 100vw;
+    width: 100%;
     margin: 10px 0;
     padding: 10px 2vw;
   }
