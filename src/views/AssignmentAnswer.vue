@@ -3,41 +3,51 @@
     <div class="header">
       <el-button type="text" icon="el-icon-arrow-left" @click="$router.back()">返回</el-button>
       <h1>{{ assignment.title || '作业答题' }}</h1>
-      <div class="meta">
+      <!-- <div class="meta">
         <span>课程：{{ assignment.courseName || '未知课程' }}</span>
         <span>教师：{{ assignment.teacherRealName || '未知教师' }}</span>
         <span>截止时间：{{ assignment.deadline || '暂无截止时间' }}</span>
-      </div>
+      </div> -->
     </div>
     
-    <div v-if="loading" class="loading">
-      <el-loading :fullscreen="false">加载中...</el-loading>
-    </div>
+    <div v-if="loading" class="loading">加载中...</div>
     
-    <div v-else-if="assignment.id" class="answer-area">
-      <div class="assignment-content">
-        <h2>作业内容</h2>
-        <div class="content-text">{{ assignment.content || '暂无作业内容' }}</div>
-      </div>
-      
-      <div class="answer-section">
-        <h2>答题区</h2>
-        <textarea 
-          v-model="answer" 
-          placeholder="请在此输入你的答案..." 
-          rows="8"
-          :disabled="submitted"
-        ></textarea>
-        <div class="actions">
-          <el-button 
-            type="primary" 
-            @click="submitAnswer"
-            :loading="submitting"
-            :disabled="submitted || !answer.trim()"
-          >
-            {{ submitted ? '已提交' : '提交答案' }}
-          </el-button>
+    <div v-else-if="assignment.questions && assignment.questions.length" class="paper-area">
+      <el-card
+        v-for="(q, idx) in assignment.questions"
+        :key="q.id"
+        class="question-card"
+      >
+        <div class="question-title">
+          {{ idx + 1 }}. {{ q.content }}
         </div>
+        <el-radio-group v-model="answers[idx]" :disabled="submitted">
+          <el-radio
+            v-for="opt in q.options"
+            :key="opt.optKey"
+            :value="opt.optKey"
+          >
+            {{ opt.optKey }}. {{ opt.optValue }}
+          </el-radio>
+        </el-radio-group>
+        <div v-if="submitted && judgeResults[idx]" class="judge-result">
+          <span :style="{color: judgeResults[idx].isCorrect ? 'green' : 'red'}">
+            {{ judgeResults[idx].isCorrect ? '✔ 正确' : '✘ 错误' }}
+          </span>
+          <span style="margin-left: 12px;">你的答案：{{ judgeResults[idx].userAnswer }}</span>
+          <span style="margin-left: 12px;">正确答案：{{ judgeResults[idx].correctAnswer }}</span>
+          <span style="margin-left: 12px;">得分：{{ judgeResults[idx].point }}</span>
+        </div>
+      </el-card>
+      <div class="actions">
+        <el-button
+          type="primary"
+          @click="submitAllAnswers"
+          :loading="submitting"
+          :disabled="submitted || answers.some(a => a === null || a === undefined)"
+        >
+          {{ submitted ? '已提交' : '提交全部答案' }}
+        </el-button>
       </div>
     </div>
     
@@ -52,6 +62,7 @@
 
 <script>
 import { getHomeworkDetail, submitHomeworkAnswer } from '@/api/homework';
+console.log('submitHomeworkAnswer', submitHomeworkAnswer);
 import { ElMessage } from 'element-plus';
 
 export default {
@@ -59,10 +70,11 @@ export default {
   data() {
     return {
       assignment: {},
-      answer: '',
+      answers: [],
       loading: true,
       submitting: false,
-      submitted: false
+      submitted: false,
+      judgeResults: []
     }
   },
   mounted() {
@@ -72,46 +84,61 @@ export default {
     async loadAssignment() {
       try {
         this.loading = true;
-        const assignmentId = this.$route.params.id;
-        console.log('加载作业详情，ID:', assignmentId);
-        
+        const assignmentId = Number(this.$route.params.id);
         const response = await getHomeworkDetail(assignmentId);
-        console.log('作业详情响应:', response);
-        
-        this.assignment = response.data || response || {};
-        
-        // 检查是否已经提交过答案
-        if (this.assignment.submittedAnswer) {
-          this.answer = this.assignment.submittedAnswer;
-          this.submitted = true;
+        if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+          this.assignment = {
+            id: assignmentId,
+            questions: response.data
+          };
+          this.answers = response.data.map(() => null);
+        } else {
+          this.assignment = { id: Number(this.$route.params.id), questions: [] };
         }
       } catch (error) {
-        console.error('获取作业详情失败:', error);
-        ElMessage.error('获取作业详情失败');
-        this.assignment = {};
+        this.assignment = { id: Number(this.$route.params.id), questions: [] };
       } finally {
         this.loading = false;
       }
     },
-    
-    async submitAnswer() {
-      if (!this.answer.trim()) {
-        ElMessage.warning('请输入答案');
+    async submitAllAnswers() {
+      if (this.answers.some(a => !a)) {
+        ElMessage.warning('请完成所有题目再提交');
         return;
       }
-      
       try {
         this.submitting = true;
-        const assignmentId = this.$route.params.id;
-        
-        await submitHomeworkAnswer(assignmentId, {
-          answer: this.answer
+        const taskId = this.assignment.id;
+        // 从 localStorage 获取 userId
+        let userId = null;
+        try {
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const userObj = JSON.parse(userStr);
+            userId = userObj.id;
+          }
+        } catch (e) {
+          userId = null;
+        }
+        if (!userId) {
+          ElMessage.error('未获取到用户信息，请重新登录');
+          this.submitting = false;
+          return;
+        }
+        // 组装提交数据
+        const submitData = this.assignment.questions.map((q, idx) => ({
+          taskId,
+          userId,
+          questionId: q.id,
+          userAnswer: this.answers[idx]
+        }));
+        console.log('submitData to backend:', JSON.stringify(submitData, null, 2));
+        await submitHomeworkAnswer(submitData).then(res => {
+          this.submitted = true;
+          this.judgeResults = res.data || [];
+          ElMessage.success('答案提交成功！');
         });
-        
-        ElMessage.success('答案提交成功！');
-        this.submitted = true;
       } catch (error) {
-        console.error('提交答案失败:', error);
         ElMessage.error('提交答案失败，请重试');
       } finally {
         this.submitting = false;
@@ -155,62 +182,36 @@ export default {
   padding: 40px;
 }
 
-.assignment-content {
-  background: #f8fafc;
+.paper-area {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 32px 28px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  min-height: 400px;
+}
+
+.question-card {
+  margin-bottom: 18px;
+  box-shadow: 0 1px 6px rgba(64,158,255,0.08);
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
-  border-left: 4px solid #409eff;
+  padding: 18px 16px;
 }
 
-.assignment-content h2 {
-  margin: 0 0 12px 0;
-  color: #409eff;
-  font-size: 18px;
-}
-
-.content-text {
-  color: #303133;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.answer-section {
-  margin-top: 24px;
-}
-
-.answer-section h2 {
-  margin: 0 0 16px 0;
-  color: #303133;
-  font-size: 18px;
-}
-
-textarea {
-  width: 100%;
-  border-radius: 8px;
-  border: 1px solid #dcdfe6;
-  padding: 16px;
+.question-title {
+  font-weight: bold;
+  margin-bottom: 12px;
   font-size: 16px;
-  margin-bottom: 16px;
-  resize: vertical;
-  min-height: 200px;
-  font-family: inherit;
-  transition: border-color 0.3s;
-}
-
-textarea:focus {
-  outline: none;
-  border-color: #409eff;
-}
-
-textarea:disabled {
-  background-color: #f5f7fa;
-  color: #909399;
-  cursor: not-allowed;
 }
 
 .actions {
   text-align: right;
+  margin-top: 24px;
 }
 
 .error-state {
@@ -231,6 +232,11 @@ textarea:disabled {
 .error-state p {
   color: #606266;
   margin-bottom: 24px;
+}
+
+.judge-result {
+  margin-top: 8px;
+  font-size: 15px;
 }
 
 @media (max-width: 768px) {

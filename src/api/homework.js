@@ -37,9 +37,9 @@ export function deleteHomework(homeworkId) {
 }
 
 // 获取作业详情
-export function getHomeworkDetail(homeworkId) {
+export function getHomeworkDetail(taskId) {
   return request({
-    url: `/homework/detail/${homeworkId}`,
+    url: `/homework/detail/${taskId}`,
     method: 'get'
   });
 }
@@ -166,10 +166,10 @@ export function getMyAssignments() {
 }
 
 // 提交作业答案
-export function submitHomeworkAnswer(homeworkId, data) {
+export function submitHomeworkAnswer(data) {
   return request({
-    url: `/homework/submit/${homeworkId}`,
+    url: `/homework/submit`,
     method: 'post',
     data
   });
-} 
+}
