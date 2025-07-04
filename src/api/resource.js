@@ -52,3 +52,15 @@ export function getResourcesByChapterId(chapterId) {
 // 获取第2页，每页20条
 getResourceList({ pageNum: 2, pageSize: 20 }) 
 
+export function viewOrPlayResource(resourceId, durationSeconds, currentProgress, resourceType) {
+  return request({
+    url: `/resources/${resourceId}/users/view`,
+    method: 'post',
+    params: {
+      durationSeconds,
+      currentProgress,
+      resourceType
+    }
+  });
+}
+
