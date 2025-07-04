@@ -6,7 +6,7 @@
         <div class="logo">📚</div>
         <div>
           <h1>{{ course.name }}</h1>
-          <p class="subtitle">授课教师：{{ course.teacherName || course.teacher}}</p>
+          <p class="subtitle">授课教师：{{ course.teacherRealName || course.teacher}}</p>
         </div>
       </div>
       <el-button type="primary" @click="enrollCourseHandler">选课</el-button>
@@ -38,7 +38,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { getCourseDetail, enrollCourse, getCourseChapters, unenrollCourse } from '@/api/course';
+import { getCourseDetail, enrollCourse, getCourseChapters, unenrollCourse, getGroupedConcepts } from '@/api/course';
 import { ElMessage } from 'element-plus';
 
 const route = useRoute();
@@ -77,7 +77,7 @@ async function fetchCourseDetail() {
     try {
       const groupedConceptsRes = await getGroupedConcepts(courseId);
       console.log('分组概念API响应:', groupedConceptsRes);
-      groupedConcepts.value = groupedConceptsRes.data || groupedConceptsRes || {};
+      groupedConcepts.value = groupedConceptsRes.data || {};
     } catch (e) {
       console.error('获取知识点失败:', e);
       ElMessage.error('获取知识点信息失败');

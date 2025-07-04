@@ -18,49 +18,37 @@ export function getResourcesByChapter(chapterId) {
     method: 'get'
   })
 }
-// 添加知识点
-export function addConcept(conceptDto) {
+
+// 上移章节
+export function moveChapterUp(chapterId) {
   return request({
-    url: '/concepts',
-    method: 'post',
-    data: conceptDto
+    url: `/chapters/reorder/${chapterId}`,
+    method: 'put'
   });
 }
-// 更新知识点
-export function updateConcept(conceptDto) {
+// 下移章节
+export function moveChapterDown(chapterId) {
   return request({
-    url: '/concepts',
+    url: `/chapters/reorder/${chapterId}`,
+    method: 'put'
+  })
+}
+
+export function reorderChapters(courseId, orderedChapterIds) {
+  return request({
+    url: `/chapters/reorder/${courseId}`,
     method: 'put',
-    data: conceptDto
-  });
-}
-// 删除知识点
-export function deleteConcept(id) {
-  return request({
-    url: `/concepts/${id}`,
-    method: 'delete'
-  });
-}
-// 删除章节
-export function deleteChapter(id) {
-  return request({
-    url: `/chapters/${id}`,
-    method: 'delete'
-  });
-}
-// 新增章节
-export function addChapter(chapterDto) {
-  return request({
-    url: '/chapters',
-    method: 'post',
-    data: chapterDto
+    data: orderedChapterIds,
+    headers: {
+      'Content-Type': 'application/json'
+    }
   });
 }
 
-// 获取概念详情
-export function getConceptDetail(id) {
+export function getConceptDetail(conceptId) {
   return request({
-    url: `/concepts/${id}`,
+    url: `/concepts/${conceptId}`,
     method: 'get'
   });
-} 
+}
+

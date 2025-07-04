@@ -290,7 +290,7 @@ export default {
 }
 @media (max-width: 600px) {
   .page-card {
-    max-width: 100vw;
+    max-width: 100%;
     margin: 10px 0;
     padding: 10px 2vw;
   }

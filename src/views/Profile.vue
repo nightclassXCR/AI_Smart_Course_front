@@ -166,7 +166,7 @@ function logout() {
 }
 @media (max-width: 600px) {
   .profile-container {
-    max-width: 100vw;
+    max-width: 100%;
     padding: 10px 2vw;
   }
 }

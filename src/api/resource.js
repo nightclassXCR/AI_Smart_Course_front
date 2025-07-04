@@ -42,6 +42,13 @@ export function getResourceDetail(resourceId) {
     method: 'get'
   });
 }
+export function getResourcesByChapterId(chapterId) {
+  return request({
+    url: `/resource/chapter/${chapterId}`,
+    method: 'get'
+  });
+}
 
 // 获取第2页，每页20条
 getResourceList({ pageNum: 2, pageSize: 20 }) 
+

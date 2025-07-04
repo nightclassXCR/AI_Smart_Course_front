@@ -134,6 +134,10 @@ export default {
   border-bottom: 1px solid #f0f0f0;
   padding: 0 32px;
   position: relative;
+  width: 100vw;
+  min-width: 1200px;
+  left: 0;
+  right: 0;
 }
 .nav-brand .logo {
   font-size: 20px;
@@ -183,7 +187,7 @@ export default {
     position: absolute;
     top: 60px;
     left: 0;
-    width: 100vw;
+    width: 100%;
     background: #fff;
     flex-direction: column;
     gap: 0;
@@ -224,11 +228,13 @@ export default {
   color: #888;
 }
 .main-content {
-  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 60vh;
+  width: 100%;
+  box-sizing: border-box;
   padding: 20px;
+  background-color: #f5f7fa;
+  overflow-y: auto;
 }
 
 .welcome-section {

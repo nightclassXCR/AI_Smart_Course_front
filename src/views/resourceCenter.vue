@@ -216,8 +216,7 @@ async function deleteResourceHandler(id) {
 
 <style scoped>
 .resource-center-container {
-  max-width: 900px;
-  margin: 40px auto;
+  width: 100%;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
@@ -306,8 +305,7 @@ async function deleteResourceHandler(id) {
 }
 @media (max-width: 600px) {
   .resource-center-container {
-    max-width: 100vw;
-    margin: 10px 0;
+    width: 100%;
     padding: 10px 2vw;
   }
   .header-title h1 {
