@@ -8,7 +8,15 @@ export function getQuestionBankList(params) {
     params
   });
 }
-
+// 根据知识点名称查询题目（支持分页和模糊查询）
+export function getQuestionsByConcept(params) {
+  // params: { page, pageSize, conceptName }
+  return request({
+    url: '/questionBank/concept',
+    method: 'get',
+    params
+  });
+}
 // 获取题目详情
 export function getQuestionDetail(questionId) {
   return request({
