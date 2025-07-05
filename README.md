@@ -1,5 +1,65 @@
-# Vue 3 + Vite
+# 智慧教学平台（AI_Smart_Course_front）
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## 项目简介
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+智慧教学平台是一个基于 Vue3 + Vite + Element Plus 的智能课程与学习管理系统，分为教师端与学生端，支持课程管理、作业任务、资源管理、知识图谱、学习分析、AI智能学伴与心理辅导等多种功能，助力智慧教育。
+
+## 主要功能
+
+- **用户注册与登录**：支持手机号、邮箱注册，找回密码，JWT 校验。
+- **课程管理**：教师可创建、编辑、管理课程，支持章节管理。
+- **任务与作业管理**：教师布置任务、作业，学生提交，支持作业批改与成绩反馈。
+- **题库管理与答题**：支持题库维护、单元测试、在线答题。
+- **资源管理**：集中管理课程相关教学资源，支持上传、下载、删除。
+- **知识图谱**：可视化展示课程知识点关联。
+- **学习分析**：多维度统计与可视化学生学习进度、成绩分布。
+- **AI智能学伴**：为学生提供个性化学习建议与陪伴。
+- **AI心理辅导**：为学生提供心理健康建议与智能问答。
+- **权限管理**：教师端与学生端分离，权限分明。
+
+## 安装部署指南
+
+1. **克隆项目代码**
+   ```bash
+   git clone https://github.com/nightclassXCR/AI_Smart_Course_front.git
+   cd AI_Smart_Course_front
+   ```
+2. **安装依赖**
+   ```bash
+   npm install
+   ```
+3. **本地开发启动**
+   ```bash
+   npm run dev
+   ```
+   默认访问地址为 [http://localhost:5173](http://localhost:5173)
+4. **生产环境打包**
+   ```bash
+   npm run build
+   ```
+5. **预览生产环境**
+   ```bash
+   npm run preview
+   ```
+> 如需通过外网访问，请在 `vite.config.js` 的 `server.allowedHosts` 中添加你的外网域名。
+
+## 使用说明
+
+- 登录后根据身份进入教师端或学生端。
+- 教师端可进行课程、章节、任务、作业、资源、知识图谱、学习分析、AI学伴与心理辅导等管理。
+- 学生端可查看课程、完成作业、参与测试、下载资源、查看知识图谱、学习分析、AI学伴与心理辅导等。
+- 个人信息可在"个人中心"进行查看和修改。
+
+## 开发成员及分工
+
+| 姓名     | 负责模块                                   | 主要工作内容                           |
+| -------- | ------------------------------------------ | -------------------------------------- |
+| 薛聪睿   | 课程管理、学习分析、知识图谱、AI学伴、AI心理辅导 | 课程与知识图谱、AI相关、学习分析开发   |
+| 柳承志   | 任务管理、资源管理、AI学伴、AI心理辅导         | 任务、资源、AI相关开发                 |
+| 张志鸿   | 作业管理、题库管理与答题、单元测试             | 作业、题库、测试功能开发               |
+| 赵俊豪   | 单元测试、系统性能测试、学习分析               | 测试与学习分析                         |
+| 吴高岑   | 用户登录、注册、找回密码、jwt校验、学习分析     | 认证、注册、找回密码、学习分析         |
+
+## 开源仓库地址
+
+- [https://github.com/nightclassXCR/AI_Smart_Course_front](https://github.com/nightclassXCR/AI_Smart_Course_front)
