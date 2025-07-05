@@ -15,7 +15,7 @@
     </div>
     <div class="knowledge-map-content">
       <div id="knowledge-map-container" style="position:relative;" v-loading="loading">
-        <div ref="echartsRef" style="width: 100%; height: 600px;"></div>
+        <div ref="echartsRef" style="width: 100%; height: 900px;"></div>
       </div>
     </div>
   </el-card>
@@ -52,73 +52,22 @@ export default {
     })
 
     function convertToTreeData(data) {
+      // 根节点不折叠，章节节点默认折叠
       return {
         name: data.title,
-        itemStyle: { color: '#409EFF', borderColor: '#2d8cf0', borderWidth: 2 },
-        label: {
-          backgroundColor: '#e6f7ff',
-          borderRadius: 16,
-          padding: [12, 28],
-          fontSize: 20,
-          fontWeight: 'bold',
-          color: '#333',
-          shadowColor: '#b3e5fc',
-          shadowBlur: 6
-        },
         children: data.chapters.map(chapter => ({
           name: chapter.title,
-          itemStyle: { color: '#67C23A', borderColor: '#67C23A', borderWidth: 2 },
-          label: {
-            backgroundColor: '#e6f7ff',
-            borderRadius: 16,
-            padding: [12, 28],
-            fontSize: 20,
-            fontWeight: 'bold',
-            color: '#333',
-            shadowColor: '#b3e5fc',
-            shadowBlur: 6
-          },
+          collapsed: true, // 初始折叠章节
           children: chapter.children.map(point => ({
             name: point.name,
             value: point.description,
+            // 可根据 importance 设置不同颜色
             itemStyle: {
               color: point.importance === 'high'
                 ? '#F56C6C'
                 : point.importance === 'medium'
                   ? '#E6A23C'
-                  : '#909399',
-              borderColor: point.importance === 'high'
-                ? '#C0392B'
-                : point.importance === 'medium'
-                  ? '#B26A00'
-                  : '#606266',
-              borderWidth: 2,
-              shadowColor: point.importance === 'high'
-                ? '#F56C6C'
-                : point.importance === 'medium'
-                  ? '#E6A23C'
-                  : '#909399',
-              shadowBlur: 15
-            },
-            label: {
-              backgroundColor:
-                point.importance === 'high'
-                  ? '#ffeaea'      // 红色系
-                  : point.importance === 'medium'
-                    ? '#fffbe6'    // 黄色系
-                    : '#e6f7ff',   // 蓝色系
-              borderRadius: 16,
-              padding: [12, 28],
-              fontSize: 20,
-              fontWeight: 'bold',
-              color: '#333',
-              shadowColor:
-                point.importance === 'high'
-                  ? '#ffd6d6'
-                  : point.importance === 'medium'
-                    ? '#fff2b3'
-                    : '#b3e5fc',
-              shadowBlur: 6
+                  : '#67C23A',
             }
           }))
         }))
@@ -129,85 +78,83 @@ export default {
       loading.value = true
       try {
         const res = await getKnowledgeMap(selectedCourse.value)
-        console.log('后端返回数据:', res)
-        console.log('后端返回数据:', res.data.data)
-        const courseData = res.data
-        console.log('后端返回数据:', courseData)
-        const treeData = convertToTreeData(courseData)
-        console.log('ECharts treeData:', treeData)
-        if (!chartInstance) {
-          chartInstance = echarts.init(echartsRef.value)
+        const courseData = res.data || []
+        if (!courseData || !courseData.chapters || courseData.chapters.length === 0) {
+          console.warn('courseData 为空或无章节，无法绘制知识图谱')
+          return
         }
+        const treeData = convertToTreeData(courseData)
+        if (chartInstance) {
+          chartInstance.dispose()
+        }
+        chartInstance = echarts.init(echartsRef.value)
         const option = {
-          backgroundColor: '#f8f8fa',
           tooltip: {
             trigger: 'item',
             triggerOn: 'mousemove',
             backgroundColor: '#fff',
             borderColor: '#409EFF',
             borderWidth: 1,
-            textStyle: { color: '#333', fontSize: 15 },
-            padding: 12,
+            textStyle: { color: '#333', fontSize: 14 },
+            padding: 10,
             extraCssText: 'box-shadow: 0 2px 12px rgba(64,158,255,0.15); border-radius: 8px;',
             formatter: function(params) {
               if (params.data.value) {
-                return `<b style="font-size:16px;">${params.data.name}</b><br/><span style="color:#888">${params.data.value}</span>`
+                return `<b style=\"font-size:15px;\">${params.data.name}</b><br/><span style=\"color:#888\">${params.data.value}</span>`
               }
-              return `<b style="font-size:16px;">${params.data.name}</b>`
+              return `<b style=\"font-size:15px;\">${params.data.name}</b>`
             }
           },
           series: [
             {
               type: 'tree',
               data: [treeData],
-              top: '8%',
-              left: '15%',
-              bottom: '8%',
+              top: '1%',
+              left: '7%',
+              bottom: '1%',
               right: '20%',
-              symbol: 'roundRect',
-              symbolSize: 32,
-              edgeShape: 'polyline',
-              edgeForkPosition: '63%',
-              initialTreeDepth: 1,
-              lineStyle: {
-                color: '#b3b3b3',
-                width: 3,
-                curveness: 0.25,
-                type: 'dashed'
-              },
-              itemStyle: {
-                shadowColor: 'rgba(64,158,255,0.18)',
-                shadowBlur: 10,
-                borderRadius: 8
-              },
+              symbol: 'circle',
+              symbolSize: 14,
+              orient: 'LR',
+              layout: 'orthogonal',
+              nodePadding: 40,
+              layerPadding: 120,
               label: {
-                backgroundColor: '#e6f7ff',
-                borderRadius: 16,
-                padding: [12, 28],
-                fontSize: 20,
-                fontWeight: 'bold',
+                position: 'left',
+                verticalAlign: 'middle',
+                align: 'right',
+                fontSize: 15,
+                backgroundColor: 'rgba(255,255,255,0.7)',
+                borderRadius: 8,
+                padding: [6, 14],
                 color: '#333',
-                shadowColor: '#b3e5fc',
-                shadowBlur: 6
+                fontWeight: 'bold'
               },
               leaves: {
                 label: {
-                  backgroundColor: '#fffbe6',
-                  borderRadius: 14,
-                  padding: [10, 22],
-                  fontSize: 18,
+                  position: 'right',
+                  verticalAlign: 'middle',
+                  align: 'left',
+                  fontSize: 14,
+                  backgroundColor: 'rgba(255,255,255,0.7)',
+                  borderRadius: 8,
+                  padding: [5, 10],
                   color: '#666'
                 }
               },
+              emphasis: {
+                focus: 'descendant'
+              },
               expandAndCollapse: true,
-              animationDuration: 800,
-              animationDurationUpdate: 1000
+              animationDuration: 600,
+              animationDurationUpdate: 900,
+              roam: true
             }
           ]
         }
         chartInstance.setOption(option)
       } catch (e) {
-        // 可选：弹窗提示
+        // 错误处理
       } finally {
         loading.value = false
       }
