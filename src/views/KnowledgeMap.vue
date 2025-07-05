@@ -1,262 +1,235 @@
 <template>
-  <el-card class="page-card">
+  <el-card class="page-card" style="position:relative;">
     <div class="page-header">
-      <h2>知识图谱</h2>
+      <el-select v-model="selectedCourse" filterable placeholder="请选择或输入课程名" style="width: 240px; margin-right: 16px" @change="fetchKnowledgeMap">
+        <el-option
+          v-for="item in courseList"
+          :key="item"
+          :label="item"
+          :value="item"
+        />
+      </el-select>
+      <el-button type="primary" @click="fetchKnowledgeMap">查询</el-button>
+      <el-button type="success" @click="downloadImage" style="margin-left: 12px;">下载图片</el-button>
+      <h2 style="margin-left: 24px">知识图谱</h2>
     </div>
     <div class="knowledge-map-content">
-      <!-- 原有知识图谱核心展示区 -->
-      <div id="knowledge-map-container">
-        <!-- 这里插入原有知识图谱可视化内容 -->
-        <slot />
+      <div id="knowledge-map-container" style="position:relative;" v-loading="loading">
+        <div ref="echartsRef" style="width: 100%; height: 600px;"></div>
       </div>
     </div>
   </el-card>
 </template>
 
 <script>
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import * as echarts from 'echarts'
+import { getKnowledgeMap } from '@/api/knowledge'
+import { getMyCourses } from '@/api/course'
 
 export default {
   name: 'KnowledgeMap',
-  data() {
-    return {
-      subjects: [],
-      selectedSubject: '',
-      currentSubjectName: '',
-      concepts: [],
-      connections: [],
-      selectedConcept: null,
-      zoomLevel: 1,
-      learningStats: {
-        total: 0,
-        completed: 0,
-        learning: 0,
-        available: 0,
-        locked: 0
-      },
-      aiSuggestions: [],
-      loading: false
-    }
-  },
-  computed: {
-    completionPercentage() {
-      if (this.learningStats.total === 0) return 0
-      return (this.learningStats.completed / this.learningStats.total) * 100
-    }
-  },
-  async created() {
-    await this.loadSubjects()
-    if (this.subjects.length > 0) {
-      this.selectedSubject = this.subjects[0].id
-      await this.loadKnowledgeMap()
-    }
-  },
-  methods: {
-    async loadSubjects() {
-      try {
-        const response = await axios.get('/api/courses/subjects')
-        this.subjects = response.data
-      } catch (error) {
-        console.error('加载学科列表失败:', error)
-        this.$message.error('加载学科列表失败')
+  setup() {
+    const echartsRef = ref(null)
+    const selectedCourse = ref('')
+    const courseList = ref([])
+    let chartInstance = null
+    const loading = ref(false)
+
+    const fetchMyCourses = async () => {
+      const res = await getMyCourses()
+      console.log('getMyCourses 原始响应:', res)
+      console.log('res.data:', res.data)
+      courseList.value = (res.data || []).map(item => item.name)
+      if (courseList.value.length > 0) {
+        selectedCourse.value = courseList.value[0]
       }
-    },
+      console.log('courseList:', courseList.value)
+    }
 
-    async loadKnowledgeMap() {
-      if (!this.selectedSubject) return
-      
-      this.loading = true
+    onMounted(() => {
+      fetchMyCourses()
+    })
+
+    function convertToTreeData(data) {
+      return {
+        name: data.title,
+        itemStyle: { color: '#409EFF', borderColor: '#2d8cf0', borderWidth: 2 },
+        label: {
+          backgroundColor: '#e6f7ff',
+          borderRadius: 16,
+          padding: [12, 28],
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: '#333',
+          shadowColor: '#b3e5fc',
+          shadowBlur: 6
+        },
+        children: data.chapters.map(chapter => ({
+          name: chapter.title,
+          itemStyle: { color: '#67C23A', borderColor: '#67C23A', borderWidth: 2 },
+          label: {
+            backgroundColor: '#e6f7ff',
+            borderRadius: 16,
+            padding: [12, 28],
+            fontSize: 20,
+            fontWeight: 'bold',
+            color: '#333',
+            shadowColor: '#b3e5fc',
+            shadowBlur: 6
+          },
+          children: chapter.children.map(point => ({
+            name: point.name,
+            value: point.description,
+            itemStyle: {
+              color: point.importance === 'high'
+                ? '#F56C6C'
+                : point.importance === 'medium'
+                  ? '#E6A23C'
+                  : '#909399',
+              borderColor: point.importance === 'high'
+                ? '#C0392B'
+                : point.importance === 'medium'
+                  ? '#B26A00'
+                  : '#606266',
+              borderWidth: 2,
+              shadowColor: point.importance === 'high'
+                ? '#F56C6C'
+                : point.importance === 'medium'
+                  ? '#E6A23C'
+                  : '#909399',
+              shadowBlur: 15
+            },
+            label: {
+              backgroundColor:
+                point.importance === 'high'
+                  ? '#ffeaea'      // 红色系
+                  : point.importance === 'medium'
+                    ? '#fffbe6'    // 黄色系
+                    : '#e6f7ff',   // 蓝色系
+              borderRadius: 16,
+              padding: [12, 28],
+              fontSize: 20,
+              fontWeight: 'bold',
+              color: '#333',
+              shadowColor:
+                point.importance === 'high'
+                  ? '#ffd6d6'
+                  : point.importance === 'medium'
+                    ? '#fff2b3'
+                    : '#b3e5fc',
+              shadowBlur: 6
+            }
+          }))
+        }))
+      }
+    }
+
+    const fetchKnowledgeMap = async () => {
+      loading.value = true
       try {
-        const [conceptsResponse, statsResponse, suggestionsResponse] = await Promise.all([
-          axios.get(`/api/knowledge-map/concepts/${this.selectedSubject}`),
-          axios.get(`/api/knowledge-map/stats/${this.selectedSubject}`),
-          axios.get(`/api/recommendations`, { params: { type: 'concept', limit: 3 } })
-        ])
-
-        this.concepts = this.processConceptsData(conceptsResponse.data.concepts)
-        this.connections = this.processConnectionsData(conceptsResponse.data.connections)
-        this.learningStats = statsResponse.data
-        this.aiSuggestions = suggestionsResponse.data
-
-        // 设置当前学科名称
-        const currentSubject = this.subjects.find(s => s.id == this.selectedSubject)
-        this.currentSubjectName = currentSubject ? currentSubject.name : ''
-
-      } catch (error) {
-        console.error('加载知识图谱失败:', error)
-        this.$message.error('加载知识图谱失败')
+        const res = await getKnowledgeMap(selectedCourse.value)
+        console.log('后端返回数据:', res)
+        console.log('后端返回数据:', res.data.data)
+        const courseData = res.data
+        console.log('后端返回数据:', courseData)
+        const treeData = convertToTreeData(courseData)
+        console.log('ECharts treeData:', treeData)
+        if (!chartInstance) {
+          chartInstance = echarts.init(echartsRef.value)
+        }
+        const option = {
+          backgroundColor: '#f8f8fa',
+          tooltip: {
+            trigger: 'item',
+            triggerOn: 'mousemove',
+            backgroundColor: '#fff',
+            borderColor: '#409EFF',
+            borderWidth: 1,
+            textStyle: { color: '#333', fontSize: 15 },
+            padding: 12,
+            extraCssText: 'box-shadow: 0 2px 12px rgba(64,158,255,0.15); border-radius: 8px;',
+            formatter: function(params) {
+              if (params.data.value) {
+                return `<b style="font-size:16px;">${params.data.name}</b><br/><span style="color:#888">${params.data.value}</span>`
+              }
+              return `<b style="font-size:16px;">${params.data.name}</b>`
+            }
+          },
+          series: [
+            {
+              type: 'tree',
+              data: [treeData],
+              top: '8%',
+              left: '15%',
+              bottom: '8%',
+              right: '20%',
+              symbol: 'roundRect',
+              symbolSize: 32,
+              edgeShape: 'polyline',
+              edgeForkPosition: '63%',
+              initialTreeDepth: 1,
+              lineStyle: {
+                color: '#b3b3b3',
+                width: 3,
+                curveness: 0.25,
+                type: 'dashed'
+              },
+              itemStyle: {
+                shadowColor: 'rgba(64,158,255,0.18)',
+                shadowBlur: 10,
+                borderRadius: 8
+              },
+              label: {
+                backgroundColor: '#e6f7ff',
+                borderRadius: 16,
+                padding: [12, 28],
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: '#333',
+                shadowColor: '#b3e5fc',
+                shadowBlur: 6
+              },
+              leaves: {
+                label: {
+                  backgroundColor: '#fffbe6',
+                  borderRadius: 14,
+                  padding: [10, 22],
+                  fontSize: 18,
+                  color: '#666'
+                }
+              },
+              expandAndCollapse: true,
+              animationDuration: 800,
+              animationDurationUpdate: 1000
+            }
+          ]
+        }
+        chartInstance.setOption(option)
+      } catch (e) {
+        // 可选：弹窗提示
       } finally {
-        this.loading = false
+        loading.value = false
       }
-    },
-
-    processConceptsData(concepts) {
-      // 计算知识点在画布上的位置
-      const canvasWidth = 800
-      const canvasHeight = 600
-      const centerX = canvasWidth / 2
-      const centerY = canvasHeight / 2
-      const radius = 200
-
-      return concepts.map((concept, index) => {
-        const angle = (index / concepts.length) * 2 * Math.PI
-        const x = centerX + Math.cos(angle) * radius - 75 // 75是节点宽度的一半
-        const y = centerY + Math.sin(angle) * radius - 50 // 50是节点高度的一半
-
-        return {
-          ...concept,
-          x: Math.max(0, Math.min(x, canvasWidth - 150)),
-          y: Math.max(0, Math.min(y, canvasHeight - 100)),
-          masteryPercentage: Math.round((concept.mastery_level || 0) * 100),
-          masteryLevel: this.getMasteryLevel(concept.mastery_level || 0)
-        }
-      })
-    },
-
-    processConnectionsData(connections) {
-      return connections.map(conn => {
-        const fromConcept = this.concepts.find(c => c.id === conn.from_concept_id)
-        const toConcept = this.concepts.find(c => c.id === conn.to_concept_id)
-        
-        if (!fromConcept || !toConcept) return null
-
-        return {
-          from: conn.from_concept_id,
-          to: conn.to_concept_id,
-          x1: fromConcept.x + 75,
-          y1: fromConcept.y + 50,
-          x2: toConcept.x + 75,
-          y2: toConcept.y + 50,
-          weight: conn.weight || 1
-        }
-      }).filter(Boolean)
-    },
-
-    getMasteryLevel(masteryValue) {
-      if (masteryValue >= 0.8) return 'high'
-      if (masteryValue >= 0.5) return 'medium'
-      if (masteryValue >= 0.2) return 'low'
-      return 'none'
-    },
-
-    selectConcept(concept) {
-      this.selectedConcept = concept
-    },
-
-    handleCanvasClick() {
-      this.selectedConcept = null
-    },
-
-    zoomIn() {
-      this.zoomLevel = Math.min(this.zoomLevel + 0.1, 2)
-    },
-
-    zoomOut() {
-      this.zoomLevel = Math.max(this.zoomLevel - 0.1, 0.5)
-    },
-
-    resetZoom() {
-      this.zoomLevel = 1
-    },
-
-    getConceptIcon(importance) {
-      const iconMap = {
-        'high': 'icon-star',
-        'medium': 'icon-circle',
-        'low': 'icon-dot'
-      }
-      return iconMap[importance] || 'icon-circle'
-    },
-
-    getImportanceText(importance) {
-      const textMap = {
-        'high': '重要',
-        'medium': '一般',
-        'low': '了解'
-      }
-      return textMap[importance] || '一般'
-    },
-
-    getSuggestionIcon(type) {
-      const iconMap = {
-        'next': 'icon-arrow-right',
-        'review': 'icon-refresh',
-        'practice': 'icon-edit'
-      }
-      return iconMap[type] || 'icon-lightbulb'
-    },
-
-    getSuggestionTypeText(type) {
-      const textMap = {
-        'next': '下一步学习',
-        'review': '复习巩固',
-        'practice': '强化练习'
-      }
-      return textMap[type] || '学习建议'
-    },
-
-    getSuggestionActionText(type) {
-      const textMap = {
-        'next': '开始学习',
-        'review': '立即复习',
-        'practice': '开始练习'
-      }
-      return textMap[type] || '立即行动'
-    },
-
-    isConnectionHighlighted(connection) {
-      if (!this.selectedConcept) return false
-      return connection.from === this.selectedConcept.id || connection.to === this.selectedConcept.id
-    },
-
-    async startLearning(conceptId) {
-      try {
-        // 记录学习行为
-        await axios.post('/api/learning-logs', {
-          target_type: 'concept',
-          target_id: conceptId,
-          action_type: 'click'
-        })
-        
-        // 跳转到学习页面
-        this.$router.push(`/learn/concept/${conceptId}`)
-      } catch (error) {
-        console.error('开始学习失败:', error)
-      }
-    },
-
-    async viewResources(conceptId) {
-      this.$router.push(`/resources/concept/${conceptId}`)
-    },
-
-    async applySuggestion(suggestion) {
-      if (suggestion.type === 'next') {
-        await this.startLearning(suggestion.recommend_id)
-      } else if (suggestion.type === 'review') {
-        this.$router.push(`/review/concept/${suggestion.recommend_id}`)
-      } else if (suggestion.type === 'practice') {
-        this.$router.push(`/practice/concept/${suggestion.recommend_id}`)
-      }
-
-      // 标记建议为已查看
-      try {
-        await axios.patch(`/api/recommendations/${suggestion.id}`, { viewed: true })
-      } catch (error) {
-        console.error('更新建议状态失败:', error)
-      }
-    },
-
-    formatDate(dateString) {
-      const date = new Date(dateString)
-      const now = new Date()
-      const diff = now - date
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-      
-      if (days === 0) return '今天'
-      if (days === 1) return '昨天'
-      if (days < 7) return `${days}天前`
-      return date.toLocaleDateString('zh-CN')
     }
+
+    // 下载图片方法
+    const downloadImage = () => {
+      if (!chartInstance) return;
+      const url = chartInstance.getDataURL({
+        type: 'png',
+        pixelRatio: 2,
+        backgroundColor: '#fff'
+      });
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = selectedCourse.value + '-知识图谱.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    return { echartsRef, selectedCourse, courseList, fetchKnowledgeMap, loading, downloadImage }
   }
 }
 </script>
@@ -268,10 +241,10 @@ export default {
   margin: 40px auto;
   padding: 30px 20px;
   box-sizing: border-box;
+  position: relative;
 }
 .page-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
