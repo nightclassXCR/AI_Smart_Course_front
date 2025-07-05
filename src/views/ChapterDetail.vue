@@ -57,7 +57,7 @@
             <el-button
               v-if="scope.row.fileType === 'video'"
               size="small"
-              @click="previewVideo(scope.row)"
+              @click="handlePreviewAndRecord(scope.row)"
             >预览</el-button>
             <el-button size="small" @click="downloadResource(scope.row)">下载</el-button>
           </template>
@@ -81,10 +81,6 @@
           <span class="detail-value">{{ conceptDetail.description || '暂无描述' }}</span>
         </div>
         <el-divider />
-        <!-- <div class="detail-row">
-          <span class="detail-label"><i class="el-icon-link"></i> 资源ID：</span>
-          <span class="detail-value">{{ conceptDetail.resourceId || '无' }}</span>
-        </div> -->
       </div>
       <template #footer>
         <el-button @click="conceptDetailDialog = false" type="primary" plain>关闭</el-button>
@@ -108,6 +104,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getChapterDetail, getConceptsByChapter, getResourcesByChapter, getConceptDetail } from '@/api/chapter'
 import { viewConcept } from '@/api/concept'
 import { ElMessage } from 'element-plus'
+import { viewOrPlayResource } from '@/api/resource'
 
 const route = useRoute()
 const router = useRouter()
@@ -126,6 +123,11 @@ const conceptDetail = reactive({
 const pageEnterTime = ref(Date.now())
 // 记录当前查看的概念ID
 const currentConceptId = ref(null)
+
+// 记录当前查看的资源ID和进入时间
+const currentResourceId = ref(null)
+const resourceEnterTime = ref(Date.now())
+const currentResourceType = ref(null)
 
 const resourceTypeMap = {
   video: '视频',
@@ -158,6 +160,18 @@ const handleConceptClick = async (conceptId) => {
   console.log(`开始查看概念: ${conceptId}`)
 }
 
+const handleResourceClick = async (resourceId, resourceType = 'video') => {
+  // 如果之前有查看其他资源，先记录之前资源的学习时长
+  if (currentResourceId.value && currentResourceId.value !== resourceId) {
+    await recordResourceDuration(currentResourceId.value, currentResourceType.value)
+  }
+  // 更新当前查看的资源
+  currentResourceId.value = resourceId
+  currentResourceType.value = resourceType
+  resourceEnterTime.value = Date.now()
+  console.log(`开始查看资源: ${resourceId}`)
+}
+
 // 记录概念学习时长
 const recordConceptDuration = async (conceptId) => {
   const now = Date.now()
@@ -174,10 +188,27 @@ const recordConceptDuration = async (conceptId) => {
   }
 }
 
+// 记录资源学习时长
+const recordResourceDuration = async (resourceId, resourceType) => {
+  const now = Date.now()
+  const durationSeconds = Math.floor((now - resourceEnterTime.value) / 1000)
+  if (durationSeconds > 1) {
+    try {
+      await viewOrPlayResource(resourceId, durationSeconds, view, resourceType)
+      console.log(`记录资源 ${resourceId} 学习时长: ${durationSeconds}秒`)
+    } catch (error) {
+      console.error('记录资源学习时长失败:', error)
+    }
+  }
+}
+
 // 页面卸载时记录最后一个概念的学习时长
 onUnmounted(async () => {
   if (currentConceptId.value) {
     await recordConceptDuration(currentConceptId.value)
+  }
+  if (currentResourceId.value) {
+    await recordResourceDuration(currentResourceId.value, currentResourceType.value)
   }
 })
 
@@ -195,6 +226,11 @@ function downloadResource(row) {
 function previewVideo(row) {
   currentVideoUrl.value = row.fileUrl
   showVideoDialog.value = true
+}
+
+const handlePreviewAndRecord = (row) => {
+  handleResourceClick(row.id, row.fileType)
+  previewVideo(row)
 }
 
 onMounted(async () => {
