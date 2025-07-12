@@ -207,199 +207,215 @@
   </script>
   
   <style scoped>
-  .login-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6a93ff 0%, #a4bafe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(64, 158, 255, 0.10), 0 1.5px 8px #e0e7ff;
+  padding: 48px 38px 32px 38px;
+  width: 370px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 2.5rem;
+}
+
+.logo h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #409EFF;
+  margin: 0;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 1.1rem;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group label {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #dbeafe;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+  background: #f8fafc;
+  margin-top: 2px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #409EFF;
+  background: #fff;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.98rem;
+  margin-bottom: 2px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.forgot-password {
+  color: #409EFF;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.98rem;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px 0;
+  background: #409EFF;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #e0e7ff;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  margin-top: 8px;
+}
+.login-btn:hover:not(:disabled) {
+  background: #2563eb;
+}
+.login-btn:disabled {
+  background: #a0cfff;
+  cursor: not-allowed;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 1rem;
+  color: #888;
+}
+
+.register-link a {
+  color: #409EFF;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.error-message {
+  color: #fff;
+  background: #ff4d4f;
+  border-radius: 6px;
+  padding: 8px 0;
+  text-align: center;
+  margin-top: 18px;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px #ffeaea;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.register-modal {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(64, 158, 255, 0.13);
+  padding: 36px 32px 24px 32px;
+  width: 370px;
+  max-width: 95vw;
+  position: relative;
+}
+
+.register-modal h2 {
+  text-align: center;
+  color: #409EFF;
+  margin-bottom: 18px;
+}
+
+.register-modal .form-group {
+  margin-bottom: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.modal-actions button {
+  padding: 8px 18px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  background: #f0f9ff;
+  color: #409EFF;
+  transition: background 0.2s;
+}
+
+.modal-actions button[type='submit'] {
+  background: #409EFF;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .login-box, .register-modal {
+    width: 98vw;
+    padding: 18px 4vw 12px 4vw;
   }
-  
-  .login-box {
-    background: white;
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-  }
-  
-  .logo-section {
-    text-align: center;
-    margin-bottom: 30px;
-  }
-  
-  .logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  
-  .logo-icon {
-    font-size: 32px;
-  }
-  
   .logo h1 {
-    margin: 0;
-    color: #333;
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 1.2rem;
   }
-  
-  .subtitle {
-    color: #666;
-    margin: 0;
-    font-size: 14px;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #333;
-    font-weight: 500;
-  }
-  
-  .form-group input, 
-  .form-group select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.3s;
-  }
-  
-  .form-group input:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: #667eea;
-  }
-  
-  .form-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    font-size: 14px;
-  }
-  
-  .remember-me {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #666;
-  }
-  
-  .forgot-password {
-    color: #667eea;
-    text-decoration: none;
-  }
-  
-  .login-btn {
-    width: 100%;
-    padding: 12px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .login-btn:hover:not(:disabled) {
-    background: #5a6fd8;
-  }
-  
-  .login-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  .register-link {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #666;
-  }
-  
-  .register-link a {
-    color: #667eea;
-    text-decoration: none;
-  }
-  
-  .error-message {
-    margin-top: 15px;
-    padding: 10px;
-    background: #fee;
-    color: #c33;
-    border-radius: 4px;
-    font-size: 14px;
-    text-align: center;
-  }
-  
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  .register-modal {
-    background: white;
-    border-radius: 8px;
-    padding: 30px;
-    width: 90%;
-    max-width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  
-  .register-modal h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #333;
-  }
-  
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  
-  .modal-actions button {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .modal-actions button[type="submit"] {
-    background: #667eea;
-    color: white;
-    border-color: #667eea;
-  }
-  
-  @media (max-width: 600px) {
-    .login-box {
-      max-width: 98vw;
-      padding: 18px 6vw 18px 6vw;
-    }
-  }
-  </style>
+}
+</style>

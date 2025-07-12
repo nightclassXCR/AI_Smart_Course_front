@@ -21,7 +21,7 @@
             <div v-for="rec in recommendList" :key="rec.id" class="overview-item" @click="router.push(`/student/course/${rec.id}`)">
               <div class="overview-title">{{ rec.name }}</div>
               <div class="overview-meta">教师：{{ rec.teacherRealName }}</div>
-              <div class="overview-meta">课程简介：{{ rec.description}}</div>
+              <div class="overview-meta course-desc">{{ rec.description }}</div>
               <!-- <el-progress :percentage="rec.progress" :stroke-width="8" /> -->
             </div>
           </div>
@@ -35,7 +35,7 @@
             <div v-for="course in allCourses" :key="course.id" class="overview-item">
               <div class="overview-title" @click="router.push(`/student/courseIntro/${course.id}`)" style="cursor:pointer; color:#409EFF;">{{ course.name }}</div>
               <div class="overview-meta">教师：{{ course.teacherRealName }}</div>
-              <div class="overview-meta">课程简介：{{ course.description }}</div>
+              <div class="overview-meta course-desc">{{ course.description }}</div>
               <!-- <el-progress :percentage="course.progress" :stroke-width="8" /> -->
               <el-button type="primary" size="small" @click="enrollCourseHandler(course.id)">选课</el-button>
             </div>
@@ -97,12 +97,13 @@
           <div v-else class="empty-module">暂无课程</div>
         </div>
         <!-- 我的作业模块 -->
-        <div class="my-block">
-          <div class="block-header">
-            <span class="block-title">我的作业</span>
-            <router-link to="/student/assignment" class="block-more">查看更多</router-link>
+        <div class="module-card">
+          <div class="module-header">
+            <span class="module-title">我的作业</span>
+            <!-- <router-link to="/student/assignment" class="text">查看更多</router-link> -->
+            <el-button type="text" @click="router.push('/student/assignment')">查看全部</el-button>
           </div>
-          <div class="my-assignments-list">
+          <div class="module-list">
             <div v-if="assignments.length === 0" class="empty-text">暂无作业</div>
             <div v-else>
               <div
@@ -299,243 +300,183 @@ function goToAssignment(id) {
 <style scoped>
 .home-container {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  padding: 32px 24px 24px 24px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(64, 158, 255, 0.10), 0 1.5px 8px #e0e7ff;
+  padding: 40px 36px 32px 36px;
+  max-width: 1100px;
+  margin: 40px auto;
 }
-.header-area {
-  display: flex;
-  align-items: center;
-  margin-bottom: 18px;
-}
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.logo {
-  font-size: 2rem;
+.header-title h1 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #22223b;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
 }
 .subtitle {
   color: #888;
-  font-size: 15px;
-  margin-top: 2px;
-}
-.stats-grid {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 24px;
-  justify-content: center;
-}
-.stat-card {
-  background: #f8fafc;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 18px 20px 14px 20px;
-  min-width: 180px;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.stat-icon {
-  font-size: 2rem;
-  color: #409EFF;
-}
-.stat-content h3 {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-.stat-value {
-  font-size: 28px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 4px;
-}
-.stat-change {
-  font-size: 12px;
-}
-.stat-change.positive {
-  color: #67c23a;
-}
-.modules-row {
-  display: flex;
-  gap: 20px;
-  margin-top: 10px;
+  font-size: 1.1rem;
+  margin-top: 6px;
+  letter-spacing: 1px;
 }
 .module-card {
-  background: #f8fafc;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 18px 20px 14px 20px;
-  flex: 1;
-  min-width: 220px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  background: #f8fafc; /* 极浅蓝色，和内层卡片区分 */
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(64,158,255,0.06);
+  padding: 22px 20px 18px 20px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.2s;
 }
-.module-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.module-title {
-  font-weight: bold;
-  font-size: 16px;
-}
-.module-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.module-item {
-  background: #fff;
-  border-radius: 8px;
-  padding: 8px 10px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  font-size: 15px;
-}
-.item-title {
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-.item-meta {
-  color: #888;
-  font-size: 13px;
-}
-.item-time {
-  color: #aaa;
-  font-size: 12px;
-  margin-left: 8px;
-}
-.empty-module {
-  color: #aaa;
-  text-align: center;
-  margin: 18px 0 8px 0;
-}
-.course-overview-card {
-  min-width: 320px;
-  max-width: 420px;
-  overflow-x: auto;
-}
-.overview-list {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+.module-card:hover {
+  box-shadow: 0 8px 32px rgba(64,158,255,0.13);
 }
 .overview-item {
-  background: #fff;
-  border-radius: 8px;
+  background: #e3eefe !important; /* 强制生效，避免被覆盖 */
+  border-radius: 12px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 12px 16px 10px 16px;
-  min-width: 180px;
+  padding: 14px 18px 12px 18px;
+  min-width: 200px;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 .overview-item:hover {
   box-shadow: 0 4px 16px rgba(64,158,255,0.12);
+  transform: translateY(-2px) scale(1.03);
 }
 .overview-title {
   font-weight: bold;
-  font-size: 15px;
-}
-.overview-meta {
-  color: #888;
-  font-size: 13px;
-  margin-bottom: 4px;
-}
-.top-row {
-  width: 100%;
-  display: flex;
-  gap: 24px;
-  justify-content: flex-start;
-  margin-bottom: 18px;
-}
-.all-courses-card, .recommend-card {
-  min-width: 320px;
-  max-width: 600px;
-  flex: 1;
-  margin: 0;
-  overflow-x: auto;
-}
-.my-block {
-  background: #f7fafd;
-  border-radius: 16px;
-  padding: 20px 24px 16px 24px;
-  margin-top: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-.block-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.block-title {
-  font-weight: bold;
-  font-size: 18px;
-  color: #222;
-}
-.block-more {
-  color: #409eff;
-  font-size: 14px;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.block-more:hover {
-  color: #1867c0;
-  text-decoration: underline;
-}
-.my-assignments-list {
-  display: flex;
-  gap: 20px;
-}
-.assignment-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px #e6eaf1;
-  padding: 18px 20px 14px 20px;
-  width: 220px;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow 0.2s, transform 0.2s;
-  cursor: pointer;
-}
-.assignment-card:hover {
-  box-shadow: 0 6px 18px #dbeafe;
-  transform: translateY(-4px) scale(1.03);
-}
-.assignment-title {
-  font-weight: bold;
   font-size: 16px;
-  color: #222;
-  margin-bottom: 8px;
-}
-.assignment-info,
-.assignment-deadline {
-  font-size: 13px;
-  color: #8a97a6;
+  color: #409EFF;
   margin-bottom: 2px;
 }
-.empty-text {
-  color: #bbb;
+.course-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  min-height: 2.8em;
+  color: #666;
   font-size: 14px;
-  padding: 16px 0;
+}
+.el-button, .overview-item .el-button {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 18px;
+}
+.stats-grid {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 28px;
+  justify-content: center;
+}
+.stat-card {
+  background: #e3eefe; /* 由#f6faff调整为更深的淡蓝色 */
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 22px 24px 18px 24px;
+  min-width: 180px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #22223b;
+  margin-bottom: 4px;
+}
+.module-list, .my-assignments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.module-item, .assignment-card {
+  background: #e3eefe; /* 由#f6faff调整为更深的淡蓝色 */
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 10px 14px;
+  font-size: 15px;
+  margin-bottom: 2px;
+  border: 2px solid #b3cfff; /* 边框色加深 */
+}
+.module-item .item-title {
+  font-weight: 600;
+  color: #409EFF;
+}
+.module-item .item-meta {
+  color: #888;
+  font-size: 13px;
+}
+.assignment-title {
+  font-weight: 600;
+  color: #409EFF;
+  margin-bottom: 2px;
+}
+.assignment-info, .assignment-deadline {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+/* 推荐和全部课程卡片美化 */
+.module-card.recommend-card,
+.module-card.all-courses-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(64,158,255,0.06);
+  padding: 22px 20px 18px 20px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.2s;
+}
+.module-card.recommend-card:hover,
+.module-card.all-courses-card:hover {
+  box-shadow: 0 8px 32px rgba(64,158,255,0.13);
+}
+.overview-item {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 14px 18px 12px 18px;
+  min-width: 200px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.overview-item:hover {
+  box-shadow: 0 4px 16px rgba(64,158,255,0.12);
+  transform: translateY(-2px) scale(1.03);
+}
+.overview-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: #409EFF;
+  margin-bottom: 2px;
+}
+.course-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  min-height: 2.8em;
+  color: #666;
+  font-size: 14px;
+}
+.el-button, .overview-item .el-button {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 18px;
 }
 @media (max-width: 900px) {
   .home-container {
     max-width: 100%;
     padding: 10px 2vw;
   }
-  .stats-grid, .modules-row {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .top-row {
+  .stats-grid, .modules-row, .top-row {
     flex-direction: column;
     gap: 12px;
   }

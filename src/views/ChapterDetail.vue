@@ -203,12 +203,12 @@ const recordResourceDuration = async (resourceId, resourceType) => {
 }
 
 // 页面卸载时记录最后一个概念的学习时长
-onUnmounted(async () => {
+onUnmounted(() => {
   if (currentConceptId.value) {
-    await recordConceptDuration(currentConceptId.value)
+    recordConceptDuration(currentConceptId.value)
   }
   if (currentResourceId.value) {
-    await recordResourceDuration(currentResourceId.value, currentResourceType.value)
+   recordResourceDuration(currentResourceId.value, currentResourceType.value)
   }
 })
 
