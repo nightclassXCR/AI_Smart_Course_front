@@ -128,6 +128,11 @@ const routes = [
         path: 'chapter/:id',
         name: 'ChapterDetail',
         component: () => import('@/views/ChapterDetail.vue')
+      },
+      {
+        path: '/questionnaire',
+        name: 'Questionnaire',
+        component: () => import('@/views/Questionnaire.vue')
       }
     ]
   },

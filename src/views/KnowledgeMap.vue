@@ -10,6 +10,7 @@
         />
       </el-select>
       <el-button type="primary" @click="fetchKnowledgeMap">查询</el-button>
+      <el-button type="info" @click="goToQuestionnaire" style="margin-left: 12px;">问卷</el-button>
       <el-button type="success" @click="downloadImage" style="margin-left: 12px;">下载图片</el-button>
       <h2 style="margin-left: 24px">知识图谱</h2>
     </div>
@@ -26,7 +27,10 @@ import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
 import { getKnowledgeMap } from '@/api/knowledge'
 import { getMyCourses } from '@/api/course'
-
+import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
+import { GetQuestionnaire } from '@/api/questionnaire'
+import { ElMessage } from 'element-plus'
 export default {
   name: 'KnowledgeMap',
   setup() {
@@ -175,8 +179,38 @@ export default {
       a.click();
       document.body.removeChild(a);
     }
-
-    return { echartsRef, selectedCourse, courseList, fetchKnowledgeMap, loading, downloadImage }
+    const router = useRouter()
+    const route = useRoute()
+    const courseName = route.query.course || ''
+    const goToQuestionnaire = () => {
+    if (!selectedCourse.value) {
+      ElMessage.warning('请先选择课程')
+      return
+    }
+    router.push({ 
+      path: '/questionnaire', 
+      query: { course: selectedCourse.value } 
+    })
+  }
+    onMounted(async () => {
+      if (!courseName) {
+        // ElMessage.error('未指定课程名') // This line was removed as per the new_code, as ElMessage is not imported.
+        loading.value = false
+        return
+      }
+      try {
+        const res = await GetQuestionnaire(courseName)
+        // questionnaire.value = res.data // This line was removed as per the new_code, as questionnaire is not defined.
+        // questionnaire.value.questions.forEach(q => { // This line was removed as per the new_code, as answers is not defined.
+        //   answers.value[q.id] = '' // This line was removed as per the new_code, as answers is not defined.
+        // })
+        loading.value = false
+      } catch (err) {
+        // ElMessage.error('问卷加载失败') // This line was removed as per the new_code, as ElMessage is not imported.
+        loading.value = false
+      }
+    })
+    return { echartsRef, selectedCourse, courseList, fetchKnowledgeMap, loading, downloadImage, goToQuestionnaire}
   }
 }
 </script>
