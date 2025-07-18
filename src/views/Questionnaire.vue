@@ -59,13 +59,24 @@
   </template>
   
   <script>
+  import { jwtDecode } from 'jwt-decode';
   import { ref, onMounted } from 'vue';
   import { useRoute } from 'vue-router';
-  import { GetQuestionnaire } from '@/api/questionnaire';
+  import { GetQuestionnaire,SubmitQuestionnaire } from '@/api/questionnaire';
 
   export default {
     name: 'Questionnaire',
     setup() {
+      const token = localStorage.getItem('token'); 
+      let userId = null;
+      if (token) {
+        try {
+         const decoded = jwtDecode(token);
+         userId = decoded.userID; 
+        } catch (e) {
+          console.error('token解析失败', e);
+        }
+      }
       const questionnaire = ref({ title: '', instructions: '', questions: [] });
       const loading = ref(true);
       const error = ref(null);
@@ -88,9 +99,31 @@
         loading.value = false;
     }
     };
-      const handleSubmit = () => {
-        console.log('用户提交的答案:', answers.value);
-        alert('问卷已提交！请查看控制台获取答案。');
+      const handleSubmit = async () => {
+        const submittedQuestions = questionnaire.value.questions.map(q => ({
+        id: q.id,
+        question_text: q.question_text,
+        type: q.type,
+        options: q.options,
+        correct_answer: q.correct_answer,
+        explanation: q.explanation,
+        userAnswer: answers.value[q.id]
+  }));
+
+  const payload = {
+    userId,
+    submittedQuestions
+  };
+
+  try {
+    const res = await SubmitQuestionnaire(payload);
+    alert('提交成功！');
+    // 可选：跳转页面或清空表单
+
+  } catch (err) {
+    alert('提交失败，请重试');
+    console.error(err);
+  }
       };
 
       onMounted(() => {

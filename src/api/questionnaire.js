@@ -10,3 +10,11 @@ export function GetQuestionnaire(courseName){
       },
     });
 } 
+
+export function SubmitQuestionnaire(data){
+    return request({
+        url:`/questionnaire/submit`,
+        method:'post',
+        data
+    });
+}
