@@ -6,11 +6,11 @@
       <form @submit.prevent="handleSubmit">
         <div v-for="(question, index) in questionnaire.questions" :key="question.id" class="question-card">
           <h3 class="question-text">{{ index + 1 }}. {{ question.question_text }}</h3>
-          <div class="options-preview" v-if="question.options && question.options.length">
+          <!-- <div class="options-preview" v-if="question.options && question.options.length">
             <span v-for="(option, optIdx) in question.options" :key="optIdx" class="option-preview">
               {{ option }}<span v-if="optIdx !== question.options.length - 1"> | </span>
             </span>
-          </div>
+          </div> -->
   
           <!-- 单选题/判断题 -->
 <div v-if="question.type === 'single_choice' || question.type === 'true_false'" class="options-group">
@@ -61,7 +61,7 @@
   <script>
   import { jwtDecode } from 'jwt-decode';
   import { ref, onMounted } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { GetQuestionnaire,SubmitQuestionnaire } from '@/api/questionnaire';
 
   export default {
@@ -82,6 +82,7 @@
       const error = ref(null);
       const answers = ref({});
       const route = useRoute();
+      const router = useRouter();
       const courseName = route.query.course || '';
       const fetchQuestionnaire = async () => {
     try {
@@ -119,7 +120,7 @@
     const res = await SubmitQuestionnaire(payload);
     alert('提交成功！');
     // 可选：跳转页面或清空表单
-
+    router.push({ path: '/student/knowledgeMap' });
   } catch (err) {
     alert('提交失败，请重试');
     console.error(err);
