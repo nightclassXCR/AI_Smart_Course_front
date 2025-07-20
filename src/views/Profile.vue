@@ -37,7 +37,15 @@
         <el-button type="primary" @click="saveEdit">保存</el-button>
       </template>
     </el-dialog>
+    <br>
+      <iframe
+      src="http://82.157.104.71/chatbot/RcX4VTFxKkmCEYQe"
+      style="width: 100%; height: 100%; min-height: 700px"
+      frameborder="0"
+      allow="microphone">
+  </iframe>
   </div>
+
 </template>
 
 <script setup>
